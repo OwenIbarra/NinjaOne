@@ -991,7 +991,9 @@ Describe 'Request helper functions' {
 		$module = Get-Module -Name $ModuleName
 		& $module {
 			$script:CallCount = 0
+			$script:RequestUris = [System.Collections.Generic.List[string]]::new()
 			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				$script:RequestUris.Add($Uri)
 				$script:CallCount++
 				if ($script:CallCount -eq 1) {
 					[pscustomobject]@{
@@ -1011,6 +1013,7 @@ Describe 'Request helper functions' {
 
 			$result.Count | Should -Be 3
 			$result[2].id | Should -Be 3
+			$script:RequestUris[1] | Should -Match 'cursor=cursor-1'
 		}
 		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 2
 	}
@@ -1019,7 +1022,9 @@ Describe 'Request helper functions' {
 		$module = Get-Module -Name $ModuleName
 		& $module {
 			$script:CallCount = 0
+			$script:RequestUris = [System.Collections.Generic.List[string]]::new()
 			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				$script:RequestUris.Add($Uri)
 				$script:CallCount++
 				if ($script:CallCount -eq 1) {
 					[pscustomobject]@{
@@ -1039,6 +1044,26 @@ Describe 'Request helper functions' {
 
 			$result.lastActivityId | Should -Be 999
 			$result.activities.Count | Should -Be 2
+			$script:RequestUris[1] | Should -Match 'olderThan=19'
+		}
+		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 2
+	}
+
+	It 'preserves the device activity cursor when paging activities' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				[pscustomobject]@{
+					lastActivityId = 999
+					lastNodeActivityId = 42
+					activities = @([pscustomobject]@{ id = 20 })
+				}
+			}
+
+			$qs = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+			$result = New-NinjaOneGETRequest -Resource '/v2/device/1/activities' -QSCollection $qs
+
+			$result.lastNodeActivityId | Should -Be 42
 		}
 		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 2
 	}
@@ -1082,7 +1107,6 @@ Describe 'Request helper functions' {
 			}
 
 			$qs = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
-			$qs.Add('pageSize', '10')
 			$null = New-NinjaOneGETRequest -Resource '/v2/test' -QSCollection $qs
 
 			$qs['cursor'] | Should -BeNullOrEmpty

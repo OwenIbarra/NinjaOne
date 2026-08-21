@@ -97,6 +97,9 @@ function Invoke-NinjaOneRequest {
 					Start-Sleep -Seconds $DelaySeconds
 				}
 			} while ($method -eq 'GET' -and $IsRateLimitedResponse)
+			if ($IsRateLimitedResponse) {
+				throw ('NinjaOne API returned an HTML response for the {0} request; the request was not retried.' -f $method)
+			}
 			Write-Verbose ('Response status code: {0}' -f $Response.StatusCode)
 			Write-Verbose ('Response headers: {0}' -f ($Response.Headers | Out-String))
 			Write-Verbose ('Raw response: {0}' -f ($Response | Out-String))

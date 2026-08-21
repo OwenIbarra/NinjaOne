@@ -37,9 +37,9 @@ function New-NinjaOneGETRequest {
 	}
 	Test-NinjaOneEndpointSupport -Method 'GET' -resource $resource -Verbose:$VerbosePreference | Out-Null
 	try {
+			$QueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
 			if ($qSCollection) {
 				Write-Verbose ('Query string in New-NinjaOneGETRequest contains: {0}' -f ($qSCollection | Out-String))
-				$QueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
 				foreach ($Key in $qSCollection.Keys) {
 					$Values = @($qSCollection.GetValues($Key))
 					foreach ($Value in $Values) {
@@ -57,37 +57,40 @@ function New-NinjaOneGETRequest {
 			$ResponseShape = $null
 			$Cursor = $null
 			$OlderThanCursor = $null
+			$AfterCursor = $null
 			$AccountLastActivityId = $null
+			$AccountLastNodeActivityId = $null
 			$FetchNextPage = $true
 			while ($FetchNextPage) {
-				if ($QueryStringCollection) {
-						$RequestQueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
-						foreach ($Key in $QueryStringCollection.Keys) {
-							$Values = @($QueryStringCollection.GetValues($Key))
-							foreach ($Value in $Values) {
-								$null = $RequestQueryStringCollection.Add($Key, [String]$Value)
-							}
-						}
-					if ($Cursor) {
-							$RequestQueryStringCollection.Set($cursorParameterName, [String]$Cursor)
+				$RequestQueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
+				foreach ($Key in $QueryStringCollection.Keys) {
+					$Values = @($QueryStringCollection.GetValues($Key))
+					foreach ($Value in $Values) {
+						$null = $RequestQueryStringCollection.Add($Key, [String]$Value)
 					}
-					if ($OlderThanCursor) {
-							$RequestQueryStringCollection.Set('olderThan', [String]$OlderThanCursor)
-					}
-						$QueryStringPairs = @()
-						foreach ($Key in $RequestQueryStringCollection.AllKeys) {
-							if ([string]::IsNullOrEmpty($Key)) { continue }
-							foreach ($Value in @($RequestQueryStringCollection.GetValues($Key))) {
-								$QueryStringPairs += ('{0}={1}' -f [System.Uri]::EscapeDataString([String]$Key), [System.Uri]::EscapeDataString([String]$Value))
-							}
-						}
-						$RequestQueryString = if ($QueryStringPairs.Count -gt 0) { ($QueryStringPairs -join '&') } else { [String]::Empty }
 				}
+				if ($Cursor) {
+					$RequestQueryStringCollection.Set($cursorParameterName, [String]$Cursor)
+				}
+				if ($OlderThanCursor) {
+					$RequestQueryStringCollection.Set('olderThan', [String]$OlderThanCursor)
+				}
+				if ($AfterCursor) {
+					$RequestQueryStringCollection.Set('after', [String]$AfterCursor)
+				}
+				$QueryStringPairs = @()
+				foreach ($Key in $RequestQueryStringCollection.AllKeys) {
+					if ([string]::IsNullOrEmpty($Key)) { continue }
+					foreach ($Value in @($RequestQueryStringCollection.GetValues($Key))) {
+						$QueryStringPairs += ('{0}={1}' -f [System.Uri]::EscapeDataString([String]$Key), [System.Uri]::EscapeDataString([String]$Value))
+					}
+				}
+				$RequestQueryString = if ($QueryStringPairs.Count -gt 0) { ($QueryStringPairs -join '&') } else { [String]::Empty }
 				Write-Verbose ('URI is {0}' -f $Script:NRAPIConnectionInformation.URL)
 				$RequestUri = [System.UriBuilder]$Script:NRAPIConnectionInformation.URL
 				$RequestUri.Path = $resource
-					if ($RequestQueryString) {
-						$RequestUri.Query = $RequestQueryString
+				if ($RequestQueryString) {
+					$RequestUri.Query = $RequestQueryString
 				} else {
 					Write-Verbose 'No query string collection present.'
 				}
@@ -119,13 +122,15 @@ function New-NinjaOneGETRequest {
 					return $Result
 				}
 				if (-not $ResponseShape) {
-					$Properties = ($Result | Get-Member -MemberType 'NoteProperty').Name
+					$Properties = if ($Result -is [Array]) { @() } else { ($Result | Get-Member -MemberType 'NoteProperty').Name }
 					$ResponseShape = if ($Properties -contains 'activities') {
 						'activities'
 					} elseif ($Properties -contains 'results') {
 						'results'
 					} elseif ($Properties -contains 'result') {
 						'result'
+					} elseif ($Result -is [Array]) {
+						'array'
 					} else {
 						'raw'
 					}
@@ -139,8 +144,11 @@ function New-NinjaOneGETRequest {
 							# 'lastActivityId' is the account-wide latest activity id, not a per-page cursor, so it's captured once for the final return value.
 							$AccountLastActivityId = $Result.lastActivityId
 						}
+						if (-not $AccountLastNodeActivityId) {
+							$AccountLastNodeActivityId = $Result.lastNodeActivityId
+						}
 						$NextOlderThan = ($Page | Select-Object -Last 1).id
-						if ((-not $UserRequestedPageSize) -and $QueryStringCollection -and $Page.Count -gt 0 -and $NextOlderThan -and ($NextOlderThan -ne $OlderThanCursor)) {
+						if ((-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextOlderThan -and ($NextOlderThan -ne $OlderThanCursor)) {
 							$OlderThanCursor = $NextOlderThan
 						} else {
 							$FetchNextPage = $false
@@ -151,7 +159,7 @@ function New-NinjaOneGETRequest {
 						$Page = @($Result.results)
 						$PageResults.AddRange($Page)
 						$NextCursor = $Result.cursor.name
-						if ((-not $UserRequestedPageSize) -and $QueryStringCollection -and $Page.Count -gt 0 -and $NextCursor -and ($NextCursor -ne $Cursor)) {
+						if ((-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextCursor -and ($NextCursor -ne $Cursor)) {
 							$Cursor = $NextCursor
 						} else {
 							$FetchNextPage = $false
@@ -159,6 +167,16 @@ function New-NinjaOneGETRequest {
 					}
 					'result' {
 						return $Result.result
+					}
+					'array' {
+						$Page = @($Result)
+						$PageResults.AddRange($Page)
+						$NextAfter = ($Page | Select-Object -Last 1).id
+						if ((-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextAfter -and ($NextAfter -ne $AfterCursor)) {
+							$AfterCursor = $NextAfter
+						} else {
+							$FetchNextPage = $false
+						}
 					}
 					default {
 						return $Result
@@ -168,13 +186,20 @@ function New-NinjaOneGETRequest {
 			switch ($ResponseShape) {
 				'activities' {
 					Write-Verbose 'returning ''activities'' property.'
-					return [PSCustomObject]@{
+					$ActivityResponse = [ordered]@{
 						lastActivityId = $AccountLastActivityId
 						activities = $PageResults.ToArray()
 					}
+					if ($null -ne $AccountLastNodeActivityId) {
+						$ActivityResponse.lastNodeActivityId = $AccountLastNodeActivityId
+					}
+					return [PSCustomObject]$ActivityResponse
 				}
 				'results' {
 					Write-Verbose 'returning ''results'' property.'
+					return $PageResults.ToArray()
+				}
+				'array' {
 					return $PageResults.ToArray()
 				}
 				default {
