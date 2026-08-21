@@ -58,9 +58,17 @@ function New-NinjaOneGETRequest {
 			$Cursor = $null
 			$OlderThanCursor = $null
 			$AfterCursor = $null
+			$AnchorCursor = $null
 			$AccountLastActivityId = $null
 			$AccountLastNodeActivityId = $null
 			$SupportsAfterPagination = $resource -match '^/?v2/(organizations|organizations-detailed|devices|devices-detailed|locations|organization/[^/]+/devices)$'
+			$AnchorParameterName = if ($resource -match '^/?v2/ticketing/app-user-contact$') {
+				'anchorNaturalId'
+			} elseif ($resource -match '^/?v2/ticketing/ticket/[^/]+/log-entry$') {
+				'anchorId'
+			}
+			$AnchorPropertyName = if ($AnchorParameterName -eq 'anchorNaturalId') { 'naturalId' } elseif ($AnchorParameterName) { 'id' }
+			$ContinuationPropertyName = if ($SupportsAfterPagination) { 'id' } elseif ($AnchorPropertyName) { $AnchorPropertyName }
 			$FetchNextPage = $true
 			while ($FetchNextPage) {
 				$RequestQueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
@@ -78,6 +86,9 @@ function New-NinjaOneGETRequest {
 				}
 				if ($AfterCursor) {
 					$RequestQueryStringCollection.Set('after', [String]$AfterCursor)
+				}
+				if ($AnchorCursor) {
+					$RequestQueryStringCollection.Set($AnchorParameterName, [String]$AnchorCursor)
 				}
 				$QueryStringPairs = @()
 				foreach ($Key in $RequestQueryStringCollection.AllKeys) {
@@ -130,7 +141,7 @@ function New-NinjaOneGETRequest {
 						'results'
 					} elseif ($Properties -contains 'result') {
 						'result'
-					} elseif ($Result -is [Array]) {
+					} elseif ($SupportsAfterPagination -or $AnchorParameterName -or $Result -is [Array]) {
 						'array'
 					} else {
 						'raw'
@@ -172,9 +183,11 @@ function New-NinjaOneGETRequest {
 					'array' {
 						$Page = @($Result)
 						$PageResults.AddRange($Page)
-						$NextAfter = ($Page | Select-Object -Last 1).id
-						if ($SupportsAfterPagination -and (-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextAfter -and ($NextAfter -ne $AfterCursor)) {
-							$AfterCursor = $NextAfter
+						$NextAnchor = ($Page | Select-Object -Last 1).$ContinuationPropertyName
+						if ($SupportsAfterPagination -and (-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextAnchor -and ($NextAnchor -ne $AfterCursor)) {
+							$AfterCursor = $NextAnchor
+						} elseif ($AnchorParameterName -and (-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextAnchor -and ($NextAnchor -ne $AnchorCursor)) {
+							$AnchorCursor = $NextAnchor
 						} else {
 							$FetchNextPage = $false
 						}

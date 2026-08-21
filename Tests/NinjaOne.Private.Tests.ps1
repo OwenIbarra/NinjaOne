@@ -1101,6 +1101,77 @@ Describe 'Request helper functions' {
 		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1
 	}
 
+	It 'pages supported after endpoints when a page contains one item' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			$script:CallCount = 0
+			$script:RequestUris = [System.Collections.Generic.List[string]]::new()
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				$script:RequestUris.Add($Uri)
+				$script:CallCount++
+				if ($script:CallCount -eq 1) {
+					[pscustomobject]@{ id = 1 }
+				} elseif ($script:CallCount -eq 2) {
+					[pscustomobject]@{ id = 2 }
+				} else {
+					return
+				}
+			}
+
+			$result = @(New-NinjaOneGETRequest -Resource '/v2/organizations')
+
+			$result.Count | Should -Be 2
+			$script:RequestUris[1] | Should -Match 'after=1'
+		}
+		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 2
+	}
+
+	It 'pages ticketing users with the natural id anchor' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			$script:CallCount = 0
+			$script:RequestUris = [System.Collections.Generic.List[string]]::new()
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				$script:RequestUris.Add($Uri)
+				$script:CallCount++
+				if ($script:CallCount -eq 1) {
+					[pscustomobject]@{ naturalId = 10 }
+				} else {
+					return
+				}
+			}
+
+			$result = @(New-NinjaOneGETRequest -Resource '/v2/ticketing/app-user-contact')
+
+			$result.Count | Should -Be 1
+			$script:RequestUris[1] | Should -Match 'anchorNaturalId=10'
+		}
+		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 2
+	}
+
+	It 'pages ticket log entries with the id anchor' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			$script:CallCount = 0
+			$script:RequestUris = [System.Collections.Generic.List[string]]::new()
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				$script:RequestUris.Add($Uri)
+				$script:CallCount++
+				if ($script:CallCount -eq 1) {
+					[pscustomobject]@{ id = 20 }
+				} else {
+					return
+				}
+			}
+
+			$result = @(New-NinjaOneGETRequest -Resource '/v2/ticketing/ticket/1/log-entry')
+
+			$result.Count | Should -Be 1
+			$script:RequestUris[1] | Should -Match 'anchorId=20'
+		}
+		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 2
+	}
+
 	It 'does not mutate the caller query collection while auto-paging' {
 		$module = Get-Module -Name $ModuleName
 		& $module {
