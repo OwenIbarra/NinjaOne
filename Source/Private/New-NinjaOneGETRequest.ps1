@@ -60,6 +60,7 @@ function New-NinjaOneGETRequest {
 			$AfterCursor = $null
 			$AccountLastActivityId = $null
 			$AccountLastNodeActivityId = $null
+			$SupportsAfterPagination = $resource -match '^/?v2/(organizations|organizations-detailed|devices|devices-detailed|locations|organization/[^/]+/devices)$'
 			$FetchNextPage = $true
 			while ($FetchNextPage) {
 				$RequestQueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
@@ -172,7 +173,7 @@ function New-NinjaOneGETRequest {
 						$Page = @($Result)
 						$PageResults.AddRange($Page)
 						$NextAfter = ($Page | Select-Object -Last 1).id
-						if ((-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextAfter -and ($NextAfter -ne $AfterCursor)) {
+						if ($SupportsAfterPagination -and (-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextAfter -and ($NextAfter -ne $AfterCursor)) {
 							$AfterCursor = $NextAfter
 						} else {
 							$FetchNextPage = $false

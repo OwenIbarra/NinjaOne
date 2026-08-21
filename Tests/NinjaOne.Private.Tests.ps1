@@ -1087,6 +1087,20 @@ Describe 'Request helper functions' {
 		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1
 	}
 
+	It 'does not apply after pagination to non-paginated array responses' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				@([pscustomobject]@{ id = 1 }, [pscustomobject]@{ id = 2 })
+			}
+
+			$result = @(New-NinjaOneGETRequest -Resource '/v2/roles')
+
+			$result.Count | Should -Be 2
+		}
+		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1
+	}
+
 	It 'does not mutate the caller query collection while auto-paging' {
 		$module = Get-Module -Name $ModuleName
 		& $module {
