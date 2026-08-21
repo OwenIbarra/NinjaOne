@@ -84,11 +84,11 @@ function Invoke-NinjaOneRequest {
 			do {
 				$Attempt++
 				$Response = Invoke-WebRequest @WebRequestParams -Headers $AuthHeaders -ContentType 'application/json;charset=utf-8'
-				# NinjaOne signals rate limiting by returning an HTML page (not a 429), so detect that instead of a status code.
+				# NinjaOne signals rate limiting by returning an HTML page (not a 429). Only retry safe GET requests; mutating requests should surface the HTML response instead of retrying.
 				$ContentType = [String]$Response.Headers['Content-Type']
 				$TrimmedContent = ([String]$Response.Content).TrimStart()
 				$IsRateLimitedResponse = ($ContentType -match 'text/html') -or ($TrimmedContent -match '^(?i)<(!DOCTYPE|html)')
-				if ($IsRateLimitedResponse) {
+				if ($method -eq 'GET' -and $IsRateLimitedResponse) {
 					if ($Attempt -gt $Script:NRAPIRateLimitMaxRetries) {
 						throw ('NinjaOne API rate limit exceeded - received an HTML response after {0} attempts.' -f $Attempt)
 					}
@@ -96,7 +96,7 @@ function Invoke-NinjaOneRequest {
 					Write-Verbose ('Received an HTML response, likely rate limited. Retrying attempt {0}/{1} after {2}s.' -f $Attempt, $Script:NRAPIRateLimitMaxRetries, $DelaySeconds)
 					Start-Sleep -Seconds $DelaySeconds
 				}
-			} while ($IsRateLimitedResponse)
+			} while ($method -eq 'GET' -and $IsRateLimitedResponse)
 			Write-Verbose ('Response status code: {0}' -f $Response.StatusCode)
 			Write-Verbose ('Response headers: {0}' -f ($Response.Headers | Out-String))
 			Write-Verbose ('Raw response: {0}' -f ($Response | Out-String))

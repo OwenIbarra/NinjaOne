@@ -37,10 +37,16 @@ function New-NinjaOneGETRequest {
 	}
 	Test-NinjaOneEndpointSupport -Method 'GET' -resource $resource -Verbose:$VerbosePreference | Out-Null
 	try {
-		if ($qSCollection) {
-			Write-Verbose ('Query string in New-NinjaOneGETRequest contains: {0}' -f ($qSCollection | Out-String))
-			$QueryStringCollection = $qSCollection
-		} else {
+			if ($qSCollection) {
+				Write-Verbose ('Query string in New-NinjaOneGETRequest contains: {0}' -f ($qSCollection | Out-String))
+				$QueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
+				foreach ($Key in $qSCollection.Keys) {
+					$Values = @($qSCollection.GetValues($Key))
+					foreach ($Value in $Values) {
+						$null = $QueryStringCollection.Add($Key, [String]$Value)
+					}
+				}
+			} else {
 			Write-Verbose 'Query string collection not present...'
 		}
 		try {
@@ -55,18 +61,33 @@ function New-NinjaOneGETRequest {
 			$FetchNextPage = $true
 			while ($FetchNextPage) {
 				if ($QueryStringCollection) {
+						$RequestQueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
+						foreach ($Key in $QueryStringCollection.Keys) {
+							$Values = @($QueryStringCollection.GetValues($Key))
+							foreach ($Value in $Values) {
+								$null = $RequestQueryStringCollection.Add($Key, [String]$Value)
+							}
+						}
 					if ($Cursor) {
-						$QueryStringCollection.Set($cursorParameterName, [String]$Cursor)
+							$RequestQueryStringCollection.Set($cursorParameterName, [String]$Cursor)
 					}
 					if ($OlderThanCursor) {
-						$QueryStringCollection.Set('olderThan', [String]$OlderThanCursor)
+							$RequestQueryStringCollection.Set('olderThan', [String]$OlderThanCursor)
 					}
+						$QueryStringPairs = @()
+						foreach ($Key in $RequestQueryStringCollection.AllKeys) {
+							if ([string]::IsNullOrEmpty($Key)) { continue }
+							foreach ($Value in @($RequestQueryStringCollection.GetValues($Key))) {
+								$QueryStringPairs += ('{0}={1}' -f [System.Uri]::EscapeDataString([String]$Key), [System.Uri]::EscapeDataString([String]$Value))
+							}
+						}
+						$RequestQueryString = if ($QueryStringPairs.Count -gt 0) { ($QueryStringPairs -join '&') } else { [String]::Empty }
 				}
 				Write-Verbose ('URI is {0}' -f $Script:NRAPIConnectionInformation.URL)
 				$RequestUri = [System.UriBuilder]$Script:NRAPIConnectionInformation.URL
 				$RequestUri.Path = $resource
-				if ($QueryStringCollection) {
-					$RequestUri.Query = $QueryStringCollection.toString()
+					if ($RequestQueryString) {
+						$RequestUri.Query = $RequestQueryString
 				} else {
 					Write-Verbose 'No query string collection present.'
 				}

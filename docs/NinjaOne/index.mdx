@@ -19,7 +19,7 @@ slug: /
 
 :::warning[2.9.0 Pagination Changes]
 
-The 2.9.0 release of the NinjaOne PowerShell module introduces changes to how pagination is handled across all commandlets with the module now automatically handling pagination for all commandlets that support it. If you want to opt-out of this behaviour you need to specify your own `-PageSize` parameter (valid range between 10 and 1000) and the module will return only the first page of results.
+The 2.9.0 release of the NinjaOne PowerShell module introduces automatic pagination for all GET endpoints that support it. If you want to opt out of this behaviour for a specific call, supply `-PageSize` for that endpoint; the module will return only the requested page. The valid page-size range is endpoint-specific, so check the individual commandlet help for the supported range on that API call.
 
 :::
 

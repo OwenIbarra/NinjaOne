@@ -986,6 +986,124 @@ Describe 'Request helper functions' {
 			{ New-NinjaOneGETRequest -Resource '/v2/missing' } | Should -Throw
 		}
 	}
+
+	It 'pages through results/cursor shaped responses until the cursor stops advancing' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			$script:CallCount = 0
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				$script:CallCount++
+				if ($script:CallCount -eq 1) {
+					[pscustomobject]@{
+						results = @([pscustomobject]@{ id = 1 }, [pscustomobject]@{ id = 2 })
+						cursor = [pscustomobject]@{ name = 'cursor-1' }
+					}
+				} else {
+					[pscustomobject]@{
+						results = @([pscustomobject]@{ id = 3 })
+						cursor = $null
+					}
+				}
+			}
+
+			$qs = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+			$result = @(New-NinjaOneGETRequest -Resource '/v2/test' -QSCollection $qs)
+
+			$result.Count | Should -Be 3
+			$result[2].id | Should -Be 3
+		}
+		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 2
+	}
+
+	It 'pages through activities shaped responses using the last returned activity id' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			$script:CallCount = 0
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				$script:CallCount++
+				if ($script:CallCount -eq 1) {
+					[pscustomobject]@{
+						lastActivityId = 999
+						activities = @([pscustomobject]@{ id = 20 }, [pscustomobject]@{ id = 19 })
+					}
+				} else {
+					[pscustomobject]@{
+						lastActivityId = 999
+						activities = @()
+					}
+				}
+			}
+
+			$qs = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+			$result = New-NinjaOneGETRequest -Resource '/v2/activities' -QSCollection $qs
+
+			$result.lastActivityId | Should -Be 999
+			$result.activities.Count | Should -Be 2
+		}
+		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 2
+	}
+
+	It 'does not auto-paginate when an explicit pageSize is supplied' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				[pscustomobject]@{
+					results = @([pscustomobject]@{ id = 1 })
+					cursor = [pscustomobject]@{ name = 'cursor-1' }
+				}
+			}
+
+			$qs = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+			$qs.Add('pageSize', '50')
+			$result = @(New-NinjaOneGETRequest -Resource '/v2/test' -QSCollection $qs)
+
+			$result.Count | Should -Be 1
+		}
+		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1
+	}
+
+	It 'does not mutate the caller query collection while auto-paging' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			$script:CallCount = 0
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				$script:CallCount++
+				if ($script:CallCount -eq 1) {
+					[pscustomobject]@{
+						results = @([pscustomobject]@{ id = 1 }, [pscustomobject]@{ id = 2 })
+						cursor = [pscustomobject]@{ name = 'cursor-1' }
+					}
+				} else {
+					[pscustomobject]@{
+						results = @([pscustomobject]@{ id = 3 })
+						cursor = $null
+					}
+				}
+			}
+
+			$qs = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+			$qs.Add('pageSize', '10')
+			$null = New-NinjaOneGETRequest -Resource '/v2/test' -QSCollection $qs
+
+			$qs['cursor'] | Should -BeNullOrEmpty
+			$qs['olderThan'] | Should -BeNullOrEmpty
+		}
+	}
+
+	It 'uses cursorName for custom field schema pagination' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+				[pscustomobject]@{ results = @(); cursor = [pscustomobject]@{ name = 'next-page' } }
+			}
+
+			$null = Get-NinjaOneCustomFieldsSchema -cursorName 'next-page' -pageSize 25
+
+			Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+				$QSCollection['cursorName'] -eq 'next-page' -and $QSCollection['pageSize'] -eq '25'
+			}
+		}
+	}
 }
 
 Describe 'New-NinjaOneError' {
@@ -3423,6 +3541,107 @@ Describe 'Invoke-NinjaOneRequest' {
 			}
 
 			Assert-MockCalled -CommandName Update-NinjaOneToken -ModuleName $ModuleName -Times 0
+		}
+	}
+
+	Context 'Rate limit handling' {
+		It 'retries when an HTML rate-limited response is returned, then succeeds' {
+			Mock -CommandName Invoke-NinjaOnePreFlightCheck -ModuleName $ModuleName -MockWith {}
+
+			$module = Get-Module -Name $ModuleName
+			& $module {
+				$script:NRAPIConnectionInformation = @{ URL = 'https://test.com' }
+				$script:NRAPIAuthenticationInformation = @{
+					Type = 'Bearer'
+					Access = 'test-token'
+					Expires = (Get-Date).AddMinutes(30)
+				}
+				$script:NRAPIRateLimitMaxRetries = 3
+				$script:NRAPIRateLimitInitialDelaySeconds = 0
+				$script:CallCount = 0
+				Mock -CommandName Start-Sleep -ModuleName $ModuleName -MockWith {}
+				Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -MockWith {
+					$script:CallCount++
+					if ($script:CallCount -lt 2) {
+						[pscustomobject]@{
+							StatusCode = 200
+							Content = '<!DOCTYPE html><html><body>Rate limited</body></html>'
+							Headers = @{ 'Content-Type' = 'text/html' }
+						}
+					} else {
+						[pscustomobject]@{
+							StatusCode = 200
+							Content = '{"result":{"id":1}}'
+							Headers = @{ 'Content-Type' = 'application/json' }
+						}
+					}
+				}
+
+				$result = Invoke-NinjaOneRequest -Method 'GET' -Uri 'https://test.com/v2/test'
+
+				$result.result.id | Should -Be 1
+				$script:CallCount | Should -Be 2
+			}
+
+			Assert-MockCalled -CommandName Invoke-WebRequest -ModuleName $ModuleName -Times 2
+			Assert-MockCalled -CommandName Start-Sleep -ModuleName $ModuleName -Times 1
+		}
+
+		It 'throws after exceeding the max retries when responses stay HTML' {
+			Mock -CommandName Invoke-NinjaOnePreFlightCheck -ModuleName $ModuleName -MockWith {}
+
+			$module = Get-Module -Name $ModuleName
+			& $module {
+				$script:NRAPIConnectionInformation = @{ URL = 'https://test.com' }
+				$script:NRAPIAuthenticationInformation = @{
+					Type = 'Bearer'
+					Access = 'test-token'
+					Expires = (Get-Date).AddMinutes(30)
+				}
+				$script:NRAPIRateLimitMaxRetries = 1
+				$script:NRAPIRateLimitInitialDelaySeconds = 0
+				Mock -CommandName Start-Sleep -ModuleName $ModuleName -MockWith {}
+				Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -MockWith {
+					[pscustomobject]@{
+						StatusCode = 200
+						Content = '<!DOCTYPE html><html><body>Rate limited</body></html>'
+						Headers = @{ 'Content-Type' = 'text/html' }
+					}
+				}
+
+				{ Invoke-NinjaOneRequest -Method 'GET' -Uri 'https://test.com/v2/test' } | Should -Throw '*rate limit*'
+			}
+
+			Assert-MockCalled -CommandName Invoke-WebRequest -ModuleName $ModuleName -Times 2
+		}
+
+		It 'does not retry HTML responses for non-GET requests' {
+			Mock -CommandName Invoke-NinjaOnePreFlightCheck -ModuleName $ModuleName -MockWith {}
+
+			$module = Get-Module -Name $ModuleName
+			& $module {
+				$script:NRAPIConnectionInformation = @{ URL = 'https://test.com' }
+				$script:NRAPIAuthenticationInformation = @{
+					Type = 'Bearer'
+					Access = 'test-token'
+					Expires = (Get-Date).AddMinutes(30)
+				}
+				$script:NRAPIRateLimitMaxRetries = 3
+				$script:NRAPIRateLimitInitialDelaySeconds = 0
+				Mock -CommandName Start-Sleep -ModuleName $ModuleName -MockWith {}
+				Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -MockWith {
+					[pscustomobject]@{
+						StatusCode = 200
+						Content = '<!DOCTYPE html><html><body>Rate limited</body></html>'
+						Headers = @{ 'Content-Type' = 'text/html' }
+					}
+				}
+
+				{ Invoke-NinjaOneRequest -Method 'POST' -Uri 'https://test.com/v2/test' -Body '{"name":"x"}' } | Should -Throw
+			}
+
+			Assert-MockCalled -CommandName Invoke-WebRequest -ModuleName $ModuleName -Times 1
+			Assert-MockCalled -CommandName Start-Sleep -ModuleName $ModuleName -Times 0
 		}
 	}
 }
