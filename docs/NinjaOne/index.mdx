@@ -17,6 +17,12 @@ slug: /
 [![Stable Release](https://img.shields.io/powershellgallery/v/NinjaOne?label=Stable+Release&style=for-the-badge)](https://www.powershellgallery.com/packages/NinjaOne/)
 [![Preview Release](https://img.shields.io/powershellgallery/v/NinjaOne?label=Preview+Release&include_prereleases&style=for-the-badge)](https://www.powershellgallery.com/packages/NinjaOne/)
 
+:::warning[2.9.0 Pagination Changes]
+
+The 2.9.0 release of the NinjaOne PowerShell module introduces changes to how pagination is handled across all commandlets with the module now automatically handling pagination for all commandlets that support it. If you want to opt-out of this behaviour you need to specify your own `-PageSize` parameter (valid range between 10 and 1000) and the module will return only the first page of results.
+
+:::
+
 ## About
 
 This module is a PowerShell wrapper for the [NinjaOne API](https://eu.ninjarmm.com/apidocs-beta). It is designed to make it easy to interact with the NinjaOne API from PowerShell.

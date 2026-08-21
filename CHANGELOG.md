@@ -4,6 +4,16 @@ Please note that backwards compatibility breaks are prefixed with `{"BC"}` (shor
 
 Note: Version 2.3.0 was released in error and will be skipped.
 
+## 2026-08-21 - Version 2.9.0
+
+* Additions:
+  * Add automatic pagination to `New-NinjaOneGETRequest` for `results`/`cursor` shaped responses (most `v2/queries/*` endpoints) and `activities`/`id` shaped responses (`Get-NinjaOneActivities`), so a single call now returns the full result set across multiple pages instead of stopping after the first page.
+  * Add graceful handling of NinjaOne's HTML rate-limit response (it doesn't return a `429`) in `Invoke-NinjaOneRequest`: detect the HTML payload and retry with exponential backoff before failing.
+
+* Fixes:
+  * Respect an explicitly supplied `-pageSize` as an opt-out of auto-pagination, returning only the requested single page.
+  * Fix the `Get-NinjaOneActivities` pagination cursor to use the last returned activity's own `id` instead of the account-wide `lastActivityId` field, which never changes between pages and previously caused pagination to stop early.
+
 ## 2026-08-05 - Version 2.8.1
 
 * Updates:

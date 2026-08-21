@@ -2,6 +2,9 @@
 [bool]$Script:ParseDateTimes = $false
 [bool]$Script:NRAPIInstanceCapabilityCheckEnabled = $true
 [Hashtable]$Script:NRAPIInstanceCapabilities = @{}
+# NinjaOne returns an HTML page (not a 429) when rate limited; these control the retry/backoff for that case.
+[int32]$Script:NRAPIRateLimitMaxRetries = 5
+[double]$Script:NRAPIRateLimitInitialDelaySeconds = 2
 [Hashtable]$Script:NRAPIInstances = @{
 	'eu' = 'https://eu.ninjarmm.com'
 	'oc' = 'https://oc.ninjarmm.com'

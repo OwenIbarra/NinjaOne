@@ -12,7 +12,7 @@
 	RootModule = '.\NinjaOne.psm1'
 
 	# Version number of this module.
-	ModuleVersion = '2.8.1'
+	ModuleVersion = '2.9.0'
 
 	# Supported PSEditions
 	# CompatiblePSEditions = @()

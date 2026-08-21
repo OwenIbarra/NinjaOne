@@ -3,7 +3,9 @@ function New-NinjaOneGETRequest {
 		.SYNOPSIS
 			Builds a request for the NinjaOne API.
 		.DESCRIPTION
-			Wrapper function to build web requests for the NinjaOne API.
+			Wrapper function to build web requests for the NinjaOne API. Automatically pages through
+			multi-page responses (activity and cursor style pagination) and returns the combined result set,
+			unless the caller explicitly supplied a `pageSize`, in which case only the requested page is returned.
 		.EXAMPLE
 			Make a GET request to the organisations endpoint.
 
@@ -23,7 +25,9 @@ function New-NinjaOneGETRequest {
 		# return the raw response.
 		[Switch]$raw,
 		# Parse date/time values returned in JSON.
-		[Switch]$parseDateTime
+		[Switch]$parseDateTime,
+		# The name of the query string parameter used to send the cursor for the next page of a `results`/`cursor` shaped response.
+		[String]$cursorParameterName = 'cursor'
 	)
 	if ($null -eq $Script:NRAPIConnectionInformation) {
 		throw "Missing NinjaOne connection information, please run 'Connect-NinjaOne' first."
@@ -39,50 +43,122 @@ function New-NinjaOneGETRequest {
 		} else {
 			Write-Verbose 'Query string collection not present...'
 		}
-		Write-Verbose ('URI is {0}' -f $Script:NRAPIConnectionInformation.URL)
-		$RequestUri = [System.UriBuilder]$Script:NRAPIConnectionInformation.URL
-		$RequestUri.Path = $resource
-		if ($QueryStringCollection) {
-			$RequestUri.Query = $QueryStringCollection.toString()
-		} else {
-			Write-Verbose 'No query string collection present.'
-		}
-		$WebRequestParams = @{
-			Method = 'GET'
-			Uri = $RequestUri.ToString()
-		}
-		if ($raw) {
-			$WebRequestParams.Add('Raw', $raw)
-		} elseif ($parseDateTime -or $Script:ParseDateTimes) {
-			$WebRequestParams.Add('ParseDateTime', $true)
-		} else {
-			Write-Verbose 'Raw switch not present.'
-		}
-		if ($WebRequestParams) {
-			Write-Verbose ('WebRequestParams contains: {0}' -f ($WebRequestParams | Out-String))
-		} else {
-			Write-Verbose 'WebRequestParams is empty.'
-		}
 		try {
-			$Result = Invoke-NinjaOneRequest @WebRequestParams
-			if ($Result) {
-				Write-Verbose ('NinjaOne request returned:: {0}' -f ($Result | Out-String))
-				$Properties = ($Result | Get-Member -MemberType 'NoteProperty')
-				if ($Properties.name -contains 'results') {
-					Write-Verbose 'returning ''results'' property.'''
-					Write-Verbose ('Result type is {0}' -f $Result.results.GetType())
-					return $Result.results
-				} elseif ($Properties.name -contains 'result') {
-					Write-Verbose 'returning ''result'' property.'
-					Write-Verbose ('Result type is {0}' -f $Result.result.GetType())
-					return $Result.result
+			# Aggregates pages for 'results'/'activities' shaped responses; cursor state tracked across iterations to detect the last page.
+			# A user-supplied 'pageSize' is an explicit request for a single page, so auto-pagination is skipped in that case.
+			$UserRequestedPageSize = [Bool]($QueryStringCollection -and $QueryStringCollection['pageSize'])
+			$PageResults = [System.Collections.Generic.List[Object]]::new()
+			$ResponseShape = $null
+			$Cursor = $null
+			$OlderThanCursor = $null
+			$AccountLastActivityId = $null
+			$FetchNextPage = $true
+			while ($FetchNextPage) {
+				if ($QueryStringCollection) {
+					if ($Cursor) {
+						$QueryStringCollection.Set($cursorParameterName, [String]$Cursor)
+					}
+					if ($OlderThanCursor) {
+						$QueryStringCollection.Set('olderThan', [String]$OlderThanCursor)
+					}
+				}
+				Write-Verbose ('URI is {0}' -f $Script:NRAPIConnectionInformation.URL)
+				$RequestUri = [System.UriBuilder]$Script:NRAPIConnectionInformation.URL
+				$RequestUri.Path = $resource
+				if ($QueryStringCollection) {
+					$RequestUri.Query = $QueryStringCollection.toString()
 				} else {
-					Write-Verbose 'returning raw.'
-					Write-Verbose ('Result type is {0}' -f $Result.GetType())
+					Write-Verbose 'No query string collection present.'
+				}
+				$WebRequestParams = @{
+					Method = 'GET'
+					Uri = $RequestUri.ToString()
+				}
+				if ($raw) {
+					$WebRequestParams.Add('Raw', $raw)
+				} elseif ($parseDateTime -or $Script:ParseDateTimes) {
+					$WebRequestParams.Add('ParseDateTime', $true)
+				} else {
+					Write-Verbose 'Raw switch not present.'
+				}
+				if ($WebRequestParams) {
+					Write-Verbose ('WebRequestParams contains: {0}' -f ($WebRequestParams | Out-String))
+				} else {
+					Write-Verbose 'WebRequestParams is empty.'
+				}
+				$Result = Invoke-NinjaOneRequest @WebRequestParams
+				if (-not $Result) {
+					Write-Verbose 'NinjaOne request returned nothing.'
+					$FetchNextPage = $false
+					break
+				}
+				Write-Verbose ('NinjaOne request returned:: {0}' -f ($Result | Out-String))
+				if ($raw) {
+					# Raw responses are returned as-is, on the first page, without pagination.
 					return $Result
 				}
-			} else {
-				Write-Verbose 'NinjaOne request returned nothing.'
+				if (-not $ResponseShape) {
+					$Properties = ($Result | Get-Member -MemberType 'NoteProperty').Name
+					$ResponseShape = if ($Properties -contains 'activities') {
+						'activities'
+					} elseif ($Properties -contains 'results') {
+						'results'
+					} elseif ($Properties -contains 'result') {
+						'result'
+					} else {
+						'raw'
+					}
+				}
+				switch ($ResponseShape) {
+					'activities' {
+						Write-Verbose 'Paging ''activities'' shaped response using the last returned activity id.'
+						$Page = @($Result.activities)
+						$PageResults.AddRange($Page)
+						if (-not $AccountLastActivityId) {
+							# 'lastActivityId' is the account-wide latest activity id, not a per-page cursor, so it's captured once for the final return value.
+							$AccountLastActivityId = $Result.lastActivityId
+						}
+						$NextOlderThan = ($Page | Select-Object -Last 1).id
+						if ((-not $UserRequestedPageSize) -and $QueryStringCollection -and $Page.Count -gt 0 -and $NextOlderThan -and ($NextOlderThan -ne $OlderThanCursor)) {
+							$OlderThanCursor = $NextOlderThan
+						} else {
+							$FetchNextPage = $false
+						}
+					}
+					'results' {
+						Write-Verbose 'Paging ''results''/''cursor'' shaped response.'
+						$Page = @($Result.results)
+						$PageResults.AddRange($Page)
+						$NextCursor = $Result.cursor.name
+						if ((-not $UserRequestedPageSize) -and $QueryStringCollection -and $Page.Count -gt 0 -and $NextCursor -and ($NextCursor -ne $Cursor)) {
+							$Cursor = $NextCursor
+						} else {
+							$FetchNextPage = $false
+						}
+					}
+					'result' {
+						return $Result.result
+					}
+					default {
+						return $Result
+					}
+				}
+			}
+			switch ($ResponseShape) {
+				'activities' {
+					Write-Verbose 'returning ''activities'' property.'
+					return [PSCustomObject]@{
+						lastActivityId = $AccountLastActivityId
+						activities = $PageResults.ToArray()
+					}
+				}
+				'results' {
+					Write-Verbose 'returning ''results'' property.'
+					return $PageResults.ToArray()
+				}
+				default {
+					return $null
+				}
 			}
 		} catch {
 			$ExceptionType = if ($IsCoreCLR) {
