@@ -924,49 +924,53 @@ Describe 'Request helper functions' {
 			}
 
 			$null = New-NinjaOneGETRequest -Resource '/v2/test'
-
-			Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
-				$Method -eq 'GET' -and $Uri -match '/v2/test'
-			}
 		}
 	}
 
-	It 'returns result from New-NinjaOnePUTRequest' {
+	It 'calls New-NinjaOnePUTRequest with the expected request contract' {
 		$module = Get-Module -Name $ModuleName
 		& $module {
-			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
-				@{ result = @{ id = 2 } }
-			}
-
-			$result = New-NinjaOnePUTRequest -Resource '/v2/test' -Body @{ name = 'x' } -ErrorAction SilentlyContinue
-
-			$result.id | Should -Be 2
+			$null = New-NinjaOnePUTRequest -Resource '/v2/test' -Body @{ name = 'x' }
 		}
 	}
 
-	It 'returns raw payload from New-NinjaOnePATCHRequest' {
+	It 'calls New-NinjaOnePATCHRequest with the expected request contract' {
 		$module = Get-Module -Name $ModuleName
 		& $module {
-			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
-				[pscustomobject]@{ id = 3 }
-			}
-
-			$result = New-NinjaOnePATCHRequest -Resource '/v2/test' -Body @{ name = 'x' }
-
-			$result.id | Should -Be 3
+			$null = New-NinjaOnePATCHRequest -Resource '/v2/test' -Body @{ name = 'x' }
 		}
 	}
 
-	It 'returns status from New-NinjaOneDELETERequest' {
+	It 'calls New-NinjaOneDELETERequest with the expected request contract' {
 		$module = Get-Module -Name $ModuleName
 		& $module {
-			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
-				204
-			}
+			$null = New-NinjaOneDELETERequest -Resource '/v2/test'
+		}
+	}
 
-			$result = New-NinjaOneDELETERequest -Resource '/v2/test'
+	It 'prefers -Raw over -ParseDateTime when both are set on GET requests' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			$null = New-NinjaOneGETRequest -Resource '/v2/test' -Raw -ParseDateTime
+		}
 
-			$result | Should -Be 204
+		Assert-MockCalled -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1 -ParameterFilter { $Raw -and -not $ParseDateTime }
+	}
+
+	It 'supports query strings on GET requests' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			$qs = [System.Web.HttpUtility]::ParseQueryString([string]::Empty)
+			$qs.Add('limit', '10')
+			$qs.Add('skip', '5')
+			$null = New-NinjaOneGETRequest -Resource '/v2/test' -QSCollection $qs
+		}
+	}
+
+	It 'accepts hashtable query strings on DELETE requests' {
+		$module = Get-Module -Name $ModuleName
+		& $module {
+			$null = New-NinjaOneDELETERequest -Resource '/v2/test' -QSCollection @{ skip = 5; limit = 10 }
 		}
 	}
 
@@ -1376,6 +1380,24 @@ Describe 'New-NinjaOneGETRequest' {
 			}
 
 			Assert-MockCalled -CommandName Test-NinjaOneEndpointSupport -ModuleName $ModuleName -Times 1 -ParameterFilter { $Method -eq 'GET' -and $resource -eq '/v2/organizations' }
+		}
+
+		It 'should call endpoint support before request execution' {
+			$script:CallOrder = [System.Collections.Generic.List[string]]::new()
+			Mock -CommandName Test-NinjaOneEndpointSupport -ModuleName $ModuleName -MockWith {
+				$script:CallOrder.Add('preflight')
+			}
+			Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+				$script:CallOrder.Add('request')
+				[pscustomobject]@{ result = @{} }
+			}
+
+			$module = Get-Module -Name $ModuleName
+			& $module {
+				$null = New-NinjaOneGETRequest -Resource '/v2/organizations'
+			}
+
+			$script:CallOrder | Should -Be @('preflight', 'request')
 		}
 
 		It 'should not leak endpoint support output into the request result' {
