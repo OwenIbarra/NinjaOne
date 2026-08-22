@@ -37,16 +37,16 @@ function New-NinjaOneGETRequest {
 	}
 	Test-NinjaOneEndpointSupport -Method 'GET' -resource $resource -Verbose:$VerbosePreference | Out-Null
 	try {
-			$QueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
-			if ($qSCollection) {
-				Write-Verbose ('Query string in New-NinjaOneGETRequest contains: {0}' -f ($qSCollection | Out-String))
-				foreach ($Key in $qSCollection.Keys) {
-					$Values = @($qSCollection.GetValues($Key))
-					foreach ($Value in $Values) {
-						$null = $QueryStringCollection.Add($Key, [String]$Value)
-					}
+		$QueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()
+		if ($qSCollection) {
+			Write-Verbose ('Query string in New-NinjaOneGETRequest contains: {0}' -f ($qSCollection | Out-String))
+			foreach ($Key in $qSCollection.Keys) {
+				$Values = @($qSCollection.GetValues($Key))
+				foreach ($Value in $Values) {
+					$null = $QueryStringCollection.Add($Key, [String]$Value)
 				}
-			} else {
+			}
+		} else {
 			Write-Verbose 'Query string collection not present...'
 		}
 		try {

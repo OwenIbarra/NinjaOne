@@ -283,6 +283,7 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           files: .artifacts/CodeCoverage.core.xml
+          disable_search: true
           flags: core
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -292,6 +293,7 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           files: .artifacts/CodeCoverage.private.xml
+          disable_search: true
           flags: private
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -301,6 +303,7 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           files: .artifacts/CodeCoverage.public.xml
+          disable_search: true
           flags: public
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -310,6 +313,7 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           files: .artifacts/CodeCoverage.docs.xml
+          disable_search: true
           flags: docs
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -319,6 +323,7 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           files: .artifacts/TestResults.core.xml
+          disable_search: true
           report_type: test_results
           flags: core
           name: pester-core
@@ -331,6 +336,7 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           files: .artifacts/TestResults.private.xml
+          disable_search: true
           report_type: test_results
           flags: private
           name: pester-private
@@ -343,6 +349,7 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           files: .artifacts/TestResults.public.xml
+          disable_search: true
           report_type: test_results
           flags: public
           name: pester-public
@@ -355,6 +362,7 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           files: .artifacts/TestResults.docs.xml
+          disable_search: true
           report_type: test_results
           flags: docs
           name: pester-docs
