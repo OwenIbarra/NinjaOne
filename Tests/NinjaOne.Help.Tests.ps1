@@ -26,7 +26,7 @@ Describe ('{0} - Help Content' -f $ModuleName) -Tags 'Module' {
             $DocIdEntries = foreach ($Function in $FunctionList) {
                 $HelpContent = Get-Help -Name $Function.Name -Full | Select-Object -Property *
                 $Functionality = [string]$HelpContent.Functionality
-                $Functionality | Should -Not -BeNullOrEmpty -Because ('{0} must declare .FUNCTIONALITY so generated documentation has a stable doc id.' -f $Function.Name)
+                $Functionality | Pester\Should -Not -BeNullOrEmpty -Because ('{0} must declare .FUNCTIONALITY so generated documentation has a stable doc id.' -f $Function.Name)
                 $Verb = $Function.Name.Split('-')[0]
                 $Slug = ([regex]::Replace($Functionality.ToLowerInvariant(), '[^a-z0-9]+', '-')).Trim('-')
                 [pscustomobject]@{
@@ -56,38 +56,38 @@ Describe ('{0} - Help Content' -f $ModuleName) -Tags 'Module' {
         # Help content tests.
         ## Help content exists.
         It 'has help content' -TestCases $Help {
-            $_ | Should -Not -BeNullOrEmpty
+            $_ | Pester\Should -Not -BeNullOrEmpty
         }
         ## Synopsis exists.
         It 'contains a synopsis' -TestCases $Help {
-            $_.Synopsis | Should -Not -BeNullOrEmpty
+            $_.Synopsis | Pester\Should -Not -BeNullOrEmpty
         }
         ## Description exists.
         It 'contains a description' -TestCases $Help {
-            $_.Description | Should -Not -BeNullOrEmpty
+            $_.Description | Pester\Should -Not -BeNullOrEmpty
         }
         ## Functionality exists.
         It 'contains a functionality' -TestCases $Help {
-            $_.Functionality | Should -Not -BeNullOrEmpty -Because 'The functionality string is used in the documentation process to provide shorter page titles and URLs.'
+            $_.Functionality | Pester\Should -Not -BeNullOrEmpty -Because 'The functionality string is used in the documentation process to provide shorter page titles and URLs.'
         }
         ## Example exists.
         It 'has at least one usage example' -TestCases $Help {
-            $_.PSObject.Properties.Name | Should -Contain -ExpectedValue 'Examples' -Because 'at least one example is required for each function.'
+            $_.PSObject.Properties.Name | Pester\Should -Contain -ExpectedValue 'Examples' -Because 'at least one example is required for each function.'
             if ($_.PSObject.Properties.Name -contains 'Examples') {
-                $_.Examples.PSObject.Properties.Name | Should -Contain -ExpectedValue 'Example' -Because 'at least one example is required for each function.'
+                $_.Examples.PSObject.Properties.Name | Pester\Should -Contain -ExpectedValue 'Example' -Because 'at least one example is required for each function.'
             }
             if (-not [String]::IsNullOrEmpty($_.Examples.Example.Code) -and $_.PSObject.Properties.Name -contains 'Examples' -and $_.Examples.PSObject.Properties.Name -contains 'Example' -and $_.Examples.Example.PSObject.Properties.Name -contains 'Code' -and $_.Examples.Example.Code.PSObject.Properties.Name -contains 'Count') {
-                $_.Examples.Example.Code.Count | Should -BeGreaterOrEqual 1 -Because 'at least one example is required for each function.'
+                $_.Examples.Example.Code.Count | Pester\Should -BeGreaterOrEqual 1 -Because 'at least one example is required for each function.'
             }
         }
         ## Examples have a title.
         ### This test is not currently meaningful because it is not possible to set an example title using Comment Based Help at this time. However examples do get a default `Example n` title where n is the sequential number of the example. Ref: https://github.com/PowerShell/PowerShell/issues/20712.
         It 'has a title for each example' -TestCases $Examples -Skip:(-not $Examples) {
-            $_.Title | Should -Not -BeNullOrEmpty
+            $_.Title | Pester\Should -Not -BeNullOrEmpty
         }
         ## Examples have a description.
         It 'has a description for each example' -TestCases $Examples -Skip:(-not $Examples) {
-            $_.Remarks | Should -Not -BeNullOrEmpty -Because ('example {0} should have a description' -f $_.Title)
+            $_.Remarks | Pester\Should -Not -BeNullOrEmpty -Because ('example {0} should have a description' -f $_.Title)
         }
         # AST tests.
     }

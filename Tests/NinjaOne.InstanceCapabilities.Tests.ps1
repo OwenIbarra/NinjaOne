@@ -11,7 +11,7 @@ BeforeAll {
 
 Describe 'Get-NinjaOneOpenApiPaths' -Tags 'Module' {
     It 'Parses YAML paths and methods' {
-        InModuleScope -ModuleName $ModuleName {
+        Pester\InModuleScope -ModuleName $ModuleName {
             $yaml = @"
 openapi: 3.0.1
 info:
@@ -30,16 +30,16 @@ components:
 "@
             $paths = Get-NinjaOneOpenApiPaths -OpenApiYaml $yaml
 
-            $paths.Keys | Should -Contain '/v2/device'
-            $paths['/v2/device'].Contains('GET') | Should -BeTrue
-            $paths['/v2/device'].Contains('POST') | Should -BeTrue
-            $paths.Keys | Should -Contain '/v2/device/{id}'
-            $paths['/v2/device/{id}'].Contains('GET') | Should -BeTrue
+            $paths.Keys | Pester\Should -Contain '/v2/device'
+            $paths['/v2/device'].Contains('GET') | Pester\Should -BeTrue
+            $paths['/v2/device'].Contains('POST') | Pester\Should -BeTrue
+            $paths.Keys | Pester\Should -Contain '/v2/device/{id}'
+            $paths['/v2/device/{id}'].Contains('GET') | Pester\Should -BeTrue
         }
     }
 
     It 'Handles empty paths section' {
-        InModuleScope -ModuleName $ModuleName {
+        Pester\InModuleScope -ModuleName $ModuleName {
             $yaml = @"
 openapi: 3.0.1
 info:
@@ -48,12 +48,12 @@ paths:
 "@
             $paths = Get-NinjaOneOpenApiPaths -OpenApiYaml $yaml
 
-            $paths.Count | Should -Be 0
+            $paths.Count | Pester\Should -Be 0
         }
     }
 
     It 'Keeps paths without methods' {
-        InModuleScope -ModuleName $ModuleName {
+        Pester\InModuleScope -ModuleName $ModuleName {
             $yaml = @"
 openapi: 3.0.1
 info:
@@ -63,15 +63,15 @@ paths:
 "@
             $paths = Get-NinjaOneOpenApiPaths -OpenApiYaml $yaml
 
-            $paths.Keys | Should -Contain '/v2/device'
-            $paths['/v2/device'].Count | Should -Be 0
+            $paths.Keys | Pester\Should -Contain '/v2/device'
+            $paths['/v2/device'].Count | Pester\Should -Be 0
         }
     }
 }
 
 Describe 'Test-NinjaOneEndpointSupport' -Tags 'Module' {
     It 'Matches multiple placeholder segments' {
-        InModuleScope -ModuleName $ModuleName {
+        Pester\InModuleScope -ModuleName $ModuleName {
             $previousEnabled = $Script:NRAPIInstanceCapabilityCheckEnabled
             $previousConnection = $Script:NRAPIConnectionInformation
             $previousCapabilities = $Script:NRAPIInstanceCapabilities
@@ -92,7 +92,7 @@ Describe 'Test-NinjaOneEndpointSupport' -Tags 'Module' {
             }
 
             $result = Test-NinjaOneEndpointSupport -Method 'PATCH' -Resource '/v2/organization/2/location/5/custom-fields'
-            $result | Should -BeTrue
+            $result | Pester\Should -BeTrue
 
             $Script:NRAPIInstanceCapabilityCheckEnabled = $previousEnabled
             $Script:NRAPIConnectionInformation = $previousConnection
@@ -125,15 +125,15 @@ paths:
         )
         $global:yamlSequence = $yamlSequence
 
-        InModuleScope -ModuleName $ModuleName {
+        Pester\InModuleScope -ModuleName $ModuleName {
             $Script:NRAPIInstanceCapabilities.Clear()
             $Script:yamlIndex = 0
             $Script:yamlSequence = $global:yamlSequence
 
-            Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -ParameterFilter { $Uri -like '*app-version.txt' } -MockWith {
+            Pester\Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -ParameterFilter { $Uri -like '*app-version.txt' } -MockWith {
                 [pscustomobject]@{ Content = '8.4.0-f' }
             }
-            Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -ParameterFilter { $Uri -like '*NinjaRMM-API-v2.yaml' } -MockWith {
+            Pester\Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -ParameterFilter { $Uri -like '*NinjaRMM-API-v2.yaml' } -MockWith {
                 $bytes = $Script:yamlSequence[$Script:yamlIndex]
                 $Script:yamlIndex += 1
                 [pscustomobject]@{ Content = $bytes }
@@ -143,10 +143,10 @@ paths:
             $cached = Get-NinjaOneInstanceCapabilitiesInternal -BaseUrl 'https://fed.ninjarmm.com'
             $refreshed = Get-NinjaOneInstanceCapabilitiesInternal -BaseUrl 'https://fed.ninjarmm.com' -Force
 
-            $first.Paths.Keys | Should -Contain '/v2/device'
-            $cached.Paths.Keys | Should -Contain '/v2/device'
-            $cached.Paths.Keys | Should -Not -Contain '/v2/device/{id}'
-            $refreshed.Paths.Keys | Should -Contain '/v2/device/{id}'
+            $first.Paths.Keys | Pester\Should -Contain '/v2/device'
+            $cached.Paths.Keys | Pester\Should -Contain '/v2/device'
+            $cached.Paths.Keys | Pester\Should -Not -Contain '/v2/device/{id}'
+            $refreshed.Paths.Keys | Pester\Should -Contain '/v2/device/{id}'
         }
 
         $global:yamlSequence = $null
@@ -163,15 +163,15 @@ Describe 'Get-NinjaOneInstanceCapabilities -IncludeCmdlets' -Tags 'Module' {
             Paths = @{}
         }
 
-        Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith { $capabilities }
+        Pester\Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith { $capabilities }
     }
 
     It 'Excludes private helper functions from analysis' {
-        InModuleScope -ModuleName $ModuleName {
+        Pester\InModuleScope -ModuleName $ModuleName {
             $result = Get-NinjaOneInstanceCapabilities -BaseUrl 'https://fed.ninjarmm.com' -IncludeCmdlets
-            $result.SupportedCmdlets | Should -Not -Contain 'Get-NinjaOneSecrets'
-            $result.UnsupportedCmdlets | Should -Not -Contain 'Get-NinjaOneSecrets'
-            $result.UnknownCmdlets | Should -Not -Contain 'Get-NinjaOneSecrets'
+            $result.SupportedCmdlets | Pester\Should -Not -Contain 'Get-NinjaOneSecrets'
+            $result.UnsupportedCmdlets | Pester\Should -Not -Contain 'Get-NinjaOneSecrets'
+            $result.UnknownCmdlets | Pester\Should -Not -Contain 'Get-NinjaOneSecrets'
         }
     }
 }
