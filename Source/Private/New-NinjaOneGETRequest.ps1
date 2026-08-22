@@ -57,7 +57,7 @@ function New-NinjaOneGETRequest {
 			$ResponseShape = $null
 			$AccountLastActivityId = $null
 			$AccountLastNodeActivityId = $null
-			$SupportsAfterPagination = $resource -match '^/?v2/(organizations|organizations-detailed|devices|devices-detailed|locations|organization/[^/]+/(devices|locations))$'
+			$SupportsAfterPagination = $resource -match '^/?v2/(organizations|organizations-detailed|devices|devices-detailed|locations|organization/[^/]+/devices)$'
 			$AnchorParameterName = if ($resource -match '^/?v2/ticketing/app-user-contact$') {
 				'anchorNaturalId'
 			} elseif ($resource -match '^/?v2/ticketing/ticket/[^/]+/log-entry$') {
@@ -183,7 +183,7 @@ function New-NinjaOneGETRequest {
 					'array' {
 						$Page = @($Result)
 						$PageResults.AddRange($Page)
-						$NextAnchor = ($Page | Select-Object -Last 1).$ContinuationPropertyName
+						$NextAnchor = if ($ContinuationPropertyName) { ($Page | Select-Object -Last 1).$ContinuationPropertyName }
 						if ($SupportsAfterPagination -and (-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextAnchor -and ($NextAnchor -ne $AfterCursor)) {
 							$AfterCursor = $NextAnchor
 						} elseif ($AnchorParameterName -and (-not $UserRequestedPageSize) -and $Page.Count -gt 0 -and $NextAnchor -and ($NextAnchor -ne $AnchorCursor)) {

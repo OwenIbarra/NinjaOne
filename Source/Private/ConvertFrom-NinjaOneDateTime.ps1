@@ -40,7 +40,7 @@ function ConvertFrom-NinjaOneDateTime {
 		if ($null -eq $value) {
 			return $null
 		}
-		if ($propertyName -match '(?i)id$') {
+		if ($propertyName -match '(?i)ids?$') {
 			return $value
 		}
 		if ($value -is [string]) {
@@ -82,7 +82,7 @@ function ConvertFrom-NinjaOneDateTime {
 		}
 		if ($value -is [System.Collections.IList]) {
 			for ($Index = 0; $Index -lt $value.Count; $Index++) {
-				$value[$Index] = Convert-NinjaOneValue -value $value[$Index]
+				$value[$Index] = Convert-NinjaOneValue -value $value[$Index] -propertyName $propertyName
 			}
 			return $value
 		}

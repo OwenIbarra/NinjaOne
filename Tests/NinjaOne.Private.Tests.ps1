@@ -356,6 +356,7 @@ Describe 'ConvertFrom-NinjaOneDateTime' {
 					id = 1704112496
 					lastActivityId = 1704112497
 					naturalId = 1704112498
+					organizationIds = @([long]1704112499, [long]1704112500)
 					createdAt = 1704112499
 				}
 
@@ -364,6 +365,8 @@ Describe 'ConvertFrom-NinjaOneDateTime' {
 				$result.id | Pester\Should -Be 1704112496
 				$result.lastActivityId | Pester\Should -Be 1704112497
 				$result.naturalId | Pester\Should -Be 1704112498
+				$result.organizationIds | Pester\Should -Be @(1704112499, 1704112500)
+				$result.organizationIds[0] | Pester\Should -BeOfType ([long])
 				$result.createdAt | Pester\Should -BeOfType ([DateTime])
 			}
 		}
@@ -1162,11 +1165,8 @@ Describe 'Request helper functions' {
 		Pester\Should-Invoke -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1 -ParameterFilter { $Uri -match 'anchorId=20' }
 	}
 
-	It 'pages organization-scoped locations with the after cursor' {
+	It 'does not paginate organization-scoped locations without a documented cursor' {
 		Pester\Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
-			if ($Uri -match 'after=10') {
-				return
-			}
 			[pscustomobject]@{ id = 10 }
 		}
 
@@ -1176,7 +1176,8 @@ Describe 'Request helper functions' {
 			$result.Count | Pester\Should -Be 1
 		}
 
-		Pester\Should-Invoke -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1 -ParameterFilter { $Uri -match 'after=10' }
+		Pester\Should-Invoke -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1
+		Pester\Should-Invoke -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 0 -ParameterFilter { $Uri -match 'after=' }
 	}
 
 	It 'does not repeat a caller-supplied non-advancing cursor' {
