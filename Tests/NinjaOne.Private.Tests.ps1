@@ -349,6 +349,24 @@ Describe 'ConvertFrom-NinjaOneDateTime' {
 				$result.timestamp | Pester\Should -BeOfType ([DateTime])
 			}
 		}
+
+		It 'should preserve identifier properties that resemble Unix epochs' {
+			Pester\InModuleScope $ModuleName {
+				$input = [pscustomobject]@{
+					id = 1704112496
+					lastActivityId = 1704112497
+					naturalId = 1704112498
+					createdAt = 1704112499
+				}
+
+				$result = ConvertFrom-NinjaOneDateTime -InputObject $input
+
+				$result.id | Pester\Should -Be 1704112496
+				$result.lastActivityId | Pester\Should -Be 1704112497
+				$result.naturalId | Pester\Should -Be 1704112498
+				$result.createdAt | Pester\Should -BeOfType ([DateTime])
+			}
+		}
 	}
 
 	Context 'Numeric edge cases' {
@@ -633,7 +651,7 @@ Describe 'ConvertFrom-NinjaOneDateTime' {
 				$result1 = ConvertFrom-NinjaOneDateTime -InputObject '1704112496'
 				$result2 = ConvertFrom-NinjaOneDateTime -InputObject '1704112496000'
 				$result3 = ConvertFrom-NinjaOneDateTime -InputObject '1704112496.123456'
-                
+
 				$result1 | Pester\Should -BeOfType ([DateTime])
 				$result2 | Pester\Should -BeOfType ([DateTime])
 				$result3 | Pester\Should -BeOfType ([DateTime])
@@ -1142,6 +1160,42 @@ Describe 'Request helper functions' {
 		}
 		Pester\Should-Invoke -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 2
 		Pester\Should-Invoke -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1 -ParameterFilter { $Uri -match 'anchorId=20' }
+	}
+
+	It 'pages organization-scoped locations with the after cursor' {
+		Pester\Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+			if ($Uri -match 'after=10') {
+				return
+			}
+			[pscustomobject]@{ id = 10 }
+		}
+
+		Pester\InModuleScope $ModuleName {
+			$result = @(New-NinjaOneGETRequest -Resource '/v2/organization/1/locations')
+
+			$result.Count | Pester\Should -Be 1
+		}
+
+		Pester\Should-Invoke -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1 -ParameterFilter { $Uri -match 'after=10' }
+	}
+
+	It 'does not repeat a caller-supplied non-advancing cursor' {
+		Pester\Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith {
+			[pscustomobject]@{
+				results = @([pscustomobject]@{ id = 1 })
+				cursor = [pscustomobject]@{ name = 'cursor-1' }
+			}
+		}
+
+		Pester\InModuleScope $ModuleName {
+			$qs = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
+			$qs.Add('cursor', 'cursor-1')
+			$result = @(New-NinjaOneGETRequest -Resource '/v2/test' -QSCollection $qs)
+
+			$result.Count | Pester\Should -Be 1
+		}
+
+		Pester\Should-Invoke -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1
 	}
 
 	It 'does not mutate the caller query collection while auto-paging' {
@@ -3142,15 +3196,16 @@ Describe 'New-NinjaOnePATCHRequest' {
 			}
 
 			$module = Get-Module -name $ModuleName
-			$result = Pester\InModuleScope $ModuleName {
+			Pester\InModuleScope $ModuleName {
 				$qs = [System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 				$qs.Add('pageSize', '10')
 				$qs.Add('detailed', 'true')
-				New-NinjaOnePATCHRequest -Resource '/v2/organizations' -Body @{ name = 'updated' } -qSCollection $qs
+				$null = New-NinjaOnePATCHRequest -Resource '/v2/organizations' -Body @{ name = 'updated' } -qSCollection $qs
 			}
 
-			($result | Out-String) | Pester\Should -Match 'pageSize=10'
-			($result | Out-String) | Pester\Should -Match 'detailed=true'
+			Pester\Should-Invoke -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+				$Uri -match 'pageSize=10' -and $Uri -match 'detailed=true'
+			}
 		}
 
 		It 'should set ParseDateTime when requested by switch' {
@@ -3724,6 +3779,60 @@ Describe 'Invoke-NinjaOneRequest' {
 			Pester\Should-Invoke -CommandName Invoke-WebRequest -ModuleName $ModuleName -Times 1
 			Pester\Should-Invoke -CommandName Start-Sleep -ModuleName $ModuleName -Times 0
 		}
+
+		It 'returns raw HTML responses without retrying' {
+			Pester\Mock -CommandName Invoke-NinjaOnePreFlightCheck -ModuleName $ModuleName -MockWith {}
+			Pester\Mock -CommandName Start-Sleep -ModuleName $ModuleName -MockWith {}
+			Pester\Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -MockWith {
+				[pscustomobject]@{
+					StatusCode = 200
+					Content = '<!DOCTYPE html><html><body>Redirect</body></html>'
+					Headers = @{ 'Content-Type' = 'text/html' }
+				}
+			}
+
+			Pester\InModuleScope $ModuleName {
+				$script:NRAPIConnectionInformation = @{ URL = 'https://test.com' }
+				$script:NRAPIAuthenticationInformation = @{
+					Type = 'Bearer'
+					Access = 'test-token'
+					Expires = (Get-Date).AddMinutes(30)
+				}
+
+				$result = Invoke-NinjaOneRequest -Method 'GET' -Uri 'https://test.com/v2/test' -Raw
+
+				$result | Pester\Should -Match 'Redirect'
+			}
+
+			Pester\Should-Invoke -CommandName Invoke-WebRequest -ModuleName $ModuleName -Times 1
+			Pester\Should-Invoke -CommandName Start-Sleep -ModuleName $ModuleName -Times 0
+		}
+
+		It 'does not retry unrelated HTML error responses' {
+			Pester\Mock -CommandName Invoke-NinjaOnePreFlightCheck -ModuleName $ModuleName -MockWith {}
+			Pester\Mock -CommandName Start-Sleep -ModuleName $ModuleName -MockWith {}
+			Pester\Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -MockWith {
+				[pscustomobject]@{
+					StatusCode = 503
+					Content = '<html><body>Scheduled maintenance</body></html>'
+					Headers = @{ 'Content-Type' = 'text/html' }
+				}
+			}
+
+			Pester\InModuleScope $ModuleName {
+				$script:NRAPIConnectionInformation = @{ URL = 'https://test.com' }
+				$script:NRAPIAuthenticationInformation = @{
+					Type = 'Bearer'
+					Access = 'test-token'
+					Expires = (Get-Date).AddMinutes(30)
+				}
+
+				{ Invoke-NinjaOneRequest -Method 'GET' -Uri 'https://test.com/v2/test' } | Pester\Should -Throw '*Scheduled maintenance*'
+			}
+
+			Pester\Should-Invoke -CommandName Invoke-WebRequest -ModuleName $ModuleName -Times 1
+			Pester\Should-Invoke -CommandName Start-Sleep -ModuleName $ModuleName -Times 0
+		}
 	}
 }
 
@@ -4173,7 +4282,7 @@ Describe 'Get-TokenExpiry' {
 				$beforeCall = Get-Date
 				$result = Get-TokenExpiry -ExpiresIn 100
 				$afterCall = Get-Date
-                
+
 				# Result should be approximately 100 seconds in the future
 				$timeDiff = ($result - $beforeCall).TotalSeconds
 				$timeDiff | Pester\Should -BeGreaterThan 99
@@ -4187,7 +4296,7 @@ Describe 'Get-TokenExpiry' {
 				$beforeCall = Get-Date
 				$result = Get-TokenExpiry -ExpiresIn 0
 				$timeDiff = ($result - $beforeCall).TotalSeconds
-                
+
 				# Should be approximately now (within 2 seconds)
 				$timeDiff | Pester\Should -BeLessThan 2
 			}
@@ -4200,7 +4309,7 @@ Describe 'Get-TokenExpiry' {
 				$oneYear = 365 * 24 * 60 * 60
 				$result = Get-TokenExpiry -ExpiresIn $oneYear
 				$result | Pester\Should -BeOfType ([DateTime])
-                
+
 				# Result should be roughly 1 year in the future
 				$timeDiff = ($result - (Get-Date)).TotalDays
 				$timeDiff | Pester\Should -BeGreaterThan 364
@@ -4213,7 +4322,7 @@ Describe 'Get-TokenExpiry' {
 			Pester\InModuleScope $ModuleName {
 				$result = Get-TokenExpiry -ExpiresIn -100
 				$result | Pester\Should -BeOfType ([DateTime])
-                
+
 				# Should be in the past
 				$result | Pester\Should -BeLessThan (Get-Date)
 			}
@@ -4238,7 +4347,7 @@ Describe 'ConvertTo-UnixEpoch' {
 			Pester\InModuleScope $ModuleName {
 				$now = Get-Date
 				$result = ConvertTo-UnixEpoch -DateTime $now
-                
+
 				# Should be between 2020 and 2100 (in epoch seconds)
 				$result | Pester\Should -BeGreaterThan 1577836800  # 2020-01-01
 				$result | Pester\Should -BeLessThan 4102444800     # 2100-01-01
@@ -4251,7 +4360,7 @@ Describe 'ConvertTo-UnixEpoch' {
 				$dt = Get-Date '2024-01-01T00:00:00Z'
 				$resultSeconds = ConvertTo-UnixEpoch -DateTime $dt
 				$resultMillis = ConvertTo-UnixEpoch -DateTime $dt -Milliseconds
-                
+
 				# Milliseconds should be 1000x the seconds (approximately)
 				$ratio = [double]$resultMillis / [double]$resultSeconds
 				$ratio | Pester\Should -BeGreaterThan 999
@@ -4265,7 +4374,7 @@ Describe 'ConvertTo-UnixEpoch' {
 				$dt = Get-Date '2024-01-01T00:00:00Z'
 				$resultFull = ConvertTo-UnixEpoch -DateTime $dt -Milliseconds
 				$resultAlias = ConvertTo-UnixEpoch -DateTime $dt -Ms
-                
+
 				$resultFull | Pester\Should -Be $resultAlias
 			}
 		}
@@ -4276,7 +4385,7 @@ Describe 'ConvertTo-UnixEpoch' {
 				$dt = Get-Date '2024-01-01T00:00:00Z'
 				$resultFull = ConvertTo-UnixEpoch -DateTime $dt -Milliseconds
 				$resultAlias = ConvertTo-UnixEpoch -DateTime $dt -Millis
-                
+
 				$resultFull | Pester\Should -Be $resultAlias
 			}
 		}
@@ -4319,7 +4428,7 @@ Describe 'ConvertTo-UnixEpoch' {
 			Pester\InModuleScope $ModuleName {
 				$dt = Get-Date '2024-01-01T00:00:00'
 				$result = ConvertTo-UnixEpoch -DateTime $dt
-                
+
 				# Result should be consistent and positive
 				$result | Pester\Should -BeGreaterThan 0
 			}

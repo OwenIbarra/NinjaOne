@@ -87,8 +87,10 @@ function Invoke-NinjaOneRequest {
 				# NinjaOne signals rate limiting by returning an HTML page (not a 429). Only retry safe GET requests; mutating requests should surface the HTML response instead of retrying.
 				$ContentType = [String]$Response.Headers['Content-Type']
 				$TrimmedContent = ([String]$Response.Content).TrimStart()
-				$IsRateLimitedResponse = ($ContentType -match 'text/html') -or ($TrimmedContent -match '^(?i)<(!DOCTYPE|html)')
-				if ($method -ieq 'GET' -and $IsRateLimitedResponse) {
+				$IsHtmlResponse = ($ContentType -match 'text/html') -or ($TrimmedContent -match '^(?i)<(!DOCTYPE|html)')
+				$HasRateLimitSignature = $TrimmedContent -match '(?i)(rate\s*limit|too\s*many\s*requests|request\s*limit\s*exceeded)'
+				$IsRateLimitedResponse = (-not $raw) -and ($method -ieq 'GET') -and $IsHtmlResponse -and $HasRateLimitSignature
+				if ($IsRateLimitedResponse) {
 					if ($Attempt -gt $Script:NRAPIRateLimitMaxRetries) {
 						throw ('NinjaOne API rate limit exceeded - received an HTML response after {0} attempts.' -f $Attempt)
 					}
@@ -96,9 +98,10 @@ function Invoke-NinjaOneRequest {
 					Write-Verbose ('Received an HTML response, likely rate limited. Retrying attempt {0}/{1} after {2}s.' -f $Attempt, $Script:NRAPIRateLimitMaxRetries, $DelaySeconds)
 					Start-Sleep -Seconds $DelaySeconds
 				}
-			} while ($method -ieq 'GET' -and $IsRateLimitedResponse)
-			if ($IsRateLimitedResponse) {
-				throw ('NinjaOne API returned an HTML response for the {0} request; the request was not retried.' -f $method)
+			} while ($IsRateLimitedResponse)
+			if ($IsHtmlResponse -and -not $raw) {
+				$ResponsePreview = if ($TrimmedContent.Length -gt 500) { $TrimmedContent.Substring(0, 500) } else { $TrimmedContent }
+				throw ('NinjaOne API returned an HTML response for the {0} request: {1}' -f $method, $ResponsePreview)
 			}
 			Write-Verbose ('Response status code: {0}' -f $Response.StatusCode)
 			Write-Verbose ('Response headers: {0}' -f ($Response.Headers | Out-String))

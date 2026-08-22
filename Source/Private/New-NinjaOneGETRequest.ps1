@@ -55,13 +55,9 @@ function New-NinjaOneGETRequest {
 			$UserRequestedPageSize = [Bool]($QueryStringCollection -and $QueryStringCollection['pageSize'])
 			$PageResults = [System.Collections.Generic.List[Object]]::new()
 			$ResponseShape = $null
-			$Cursor = $null
-			$OlderThanCursor = $null
-			$AfterCursor = $null
-			$AnchorCursor = $null
 			$AccountLastActivityId = $null
 			$AccountLastNodeActivityId = $null
-			$SupportsAfterPagination = $resource -match '^/?v2/(organizations|organizations-detailed|devices|devices-detailed|locations|organization/[^/]+/devices)$'
+			$SupportsAfterPagination = $resource -match '^/?v2/(organizations|organizations-detailed|devices|devices-detailed|locations|organization/[^/]+/(devices|locations))$'
 			$AnchorParameterName = if ($resource -match '^/?v2/ticketing/app-user-contact$') {
 				'anchorNaturalId'
 			} elseif ($resource -match '^/?v2/ticketing/ticket/[^/]+/log-entry$') {
@@ -69,6 +65,10 @@ function New-NinjaOneGETRequest {
 			}
 			$AnchorPropertyName = if ($AnchorParameterName -eq 'anchorNaturalId') { 'naturalId' } elseif ($AnchorParameterName) { 'id' }
 			$ContinuationPropertyName = if ($SupportsAfterPagination) { 'id' } elseif ($AnchorPropertyName) { $AnchorPropertyName }
+			$Cursor = $QueryStringCollection[$cursorParameterName]
+			$OlderThanCursor = $QueryStringCollection['olderThan']
+			$AfterCursor = $QueryStringCollection['after']
+			$AnchorCursor = if ($AnchorParameterName) { $QueryStringCollection[$AnchorParameterName] }
 			$FetchNextPage = $true
 			while ($FetchNextPage) {
 				$RequestQueryStringCollection = [System.Collections.Specialized.NameValueCollection]::new()

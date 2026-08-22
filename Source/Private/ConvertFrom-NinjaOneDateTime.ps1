@@ -34,10 +34,14 @@ function ConvertFrom-NinjaOneDateTime {
 			[Object]
 		#>
 		param (
-			[Object]$value
+			[Object]$value,
+			[String]$propertyName
 		)
 		if ($null -eq $value) {
 			return $null
+		}
+		if ($propertyName -match '(?i)id$') {
+			return $value
 		}
 		if ($value -is [string]) {
 			if ($value -match '^[0-9]{10}$' -or $value -match '^[0-9]{13}$') {
@@ -72,7 +76,7 @@ function ConvertFrom-NinjaOneDateTime {
 		}
 		if ($value -is [System.Collections.IDictionary]) {
 			foreach ($Key in @($value.Keys)) {
-				$value[$Key] = Convert-NinjaOneValue -value $value[$Key]
+				$value[$Key] = Convert-NinjaOneValue -value $value[$Key] -propertyName ([String]$Key)
 			}
 			return $value
 		}
@@ -87,7 +91,7 @@ function ConvertFrom-NinjaOneDateTime {
 		}
 		if ($value -is [psobject]) {
 			foreach ($Property in $value.PSObject.Properties) {
-				$value.$($Property.Name) = Convert-NinjaOneValue -value $Property.Value
+				$value.$($Property.Name) = Convert-NinjaOneValue -value $Property.Value -propertyName $Property.Name
 			}
 			return $value
 		}
