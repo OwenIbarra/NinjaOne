@@ -1580,6 +1580,15 @@ Describe 'Get-NinjaOneInstanceCapabilities' {
 		}
 	}
 
+	It 'resolves a named instance to its configured base URL' {
+		$result = Get-NinjaOneInstanceCapabilities -instance 'fed'
+
+		$result.BaseUrl | Pester\Should -Be 'https://fed.ninjarmm.com'
+		Pester\Should-Invoke -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -Times 1 -ParameterFilter {
+			$baseUrl -eq 'https://fed.ninjarmm.com'
+		}
+	}
+
 	It 'passes refresh switch through as Force to internal loader' {
 		$null = Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com' -refresh
 

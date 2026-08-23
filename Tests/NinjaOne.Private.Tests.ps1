@@ -948,6 +948,17 @@ Describe 'Request helper functions' {
 		}
 	}
 
+	It 'returns null when a GET request produces no response' {
+		$module = Get-Module -name $ModuleName
+		Pester\InModuleScope $ModuleName {
+			Pester\Mock -CommandName Invoke-NinjaOneRequest -ModuleName $ModuleName -MockWith { $null }
+
+			$result = New-NinjaOneGETRequest -Resource '/v2/test'
+
+			$result | Pester\Should -BeNullOrEmpty
+		}
+	}
+
 	It 'calls New-NinjaOnePUTRequest with the expected request contract' {
 		$module = Get-Module -name $ModuleName
 		Pester\InModuleScope $ModuleName {
@@ -3678,6 +3689,58 @@ Describe 'Invoke-NinjaOneRequest' {
 			}
 
 			Pester\Should-Invoke -CommandName Update-NinjaOneToken -ModuleName $ModuleName -Times 0
+		}
+
+		It 'refreshes an expired token and returns the status code for an empty POST response' {
+			Pester\Mock -CommandName Invoke-NinjaOnePreFlightCheck -ModuleName $ModuleName -MockWith {}
+			Pester\Mock -CommandName Update-NinjaOneToken -ModuleName $ModuleName -MockWith {}
+			Pester\Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -MockWith {
+				[pscustomobject]@{
+					StatusCode = 204
+					Content = [String]::Empty
+					Headers = @{}
+				}
+			}
+
+			Pester\InModuleScope $ModuleName {
+				$script:NRAPIAuthenticationInformation = @{
+					Type = 'Bearer'
+					Access = 'test-token'
+					Expires = (Get-Date).AddMinutes(-1)
+				}
+
+				$result = Invoke-NinjaOneRequest -Method 'POST' -Uri 'https://test.com/v2/test' -Body '{"name":"x"}'
+
+				$result | Pester\Should -Be 204
+			}
+
+			Pester\Should-Invoke -CommandName Update-NinjaOneToken -ModuleName $ModuleName -Times 1
+			Pester\Should-Invoke -CommandName Invoke-WebRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+				$Body -eq '{"name":"x"}'
+			}
+		}
+
+		It 'converts date values when ParseDateTime is requested' {
+			Pester\Mock -CommandName Invoke-NinjaOnePreFlightCheck -ModuleName $ModuleName -MockWith {}
+			Pester\Mock -CommandName Invoke-WebRequest -ModuleName $ModuleName -MockWith {
+				[pscustomobject]@{
+					StatusCode = 200
+					Content = '{"created":"2024-01-01T00:00:00Z"}'
+					Headers = @{ 'Content-Type' = 'application/json' }
+				}
+			}
+
+			Pester\InModuleScope $ModuleName {
+				$script:NRAPIAuthenticationInformation = @{
+					Type = 'Bearer'
+					Access = 'test-token'
+					Expires = (Get-Date).AddMinutes(30)
+				}
+
+				$result = Invoke-NinjaOneRequest -Method 'GET' -Uri 'https://test.com/v2/test' -ParseDateTime
+
+				$result.created | Pester\Should -BeOfType ([DateTime])
+			}
 		}
 	}
 
