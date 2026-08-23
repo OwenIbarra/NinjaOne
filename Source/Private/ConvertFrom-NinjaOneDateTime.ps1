@@ -81,14 +81,14 @@ function ConvertFrom-NinjaOneDateTime {
 		if ($value -is [System.Collections.IDictionary]) {
 			foreach ($Key in @($value.Keys)) {
 				$childPropertyName = [String]$Key
-				$childPropertyPath = if ([String]::IsNullOrWhiteSpace($propertyPath)) { $childPropertyName } else { "$propertyPath.$childPropertyName" }
+				$childPropertyPath = if ([String]::IsNullOrWhiteSpace($propertyPath)) { $childPropertyName } else { '{0}.{1}' -f $propertyPath, $childPropertyName }
 				$value[$Key] = Convert-NinjaOneValue -value $value[$Key] -propertyName $childPropertyName -propertyPath $childPropertyPath
 			}
 			return $value
 		}
 		if ($value -is [System.Collections.IList]) {
 			for ($Index = 0; $Index -lt $value.Count; $Index++) {
-				$childPropertyPath = if ([String]::IsNullOrWhiteSpace($propertyPath)) { $propertyName } else { "$propertyPath[$Index]" }
+				$childPropertyPath = if ([String]::IsNullOrWhiteSpace($propertyPath)) { $propertyName } else { '{0}[{1}]' -f $propertyPath, $Index }
 				$value[$Index] = Convert-NinjaOneValue -value $value[$Index] -propertyName $propertyName -propertyPath $childPropertyPath
 			}
 			return $value
@@ -99,7 +99,7 @@ function ConvertFrom-NinjaOneDateTime {
 		if ($value -is [psobject]) {
 			foreach ($Property in $value.PSObject.Properties) {
 				$childPropertyName = [String]$Property.Name
-				$childPropertyPath = if ([String]::IsNullOrWhiteSpace($propertyPath)) { $childPropertyName } else { "$propertyPath.$childPropertyName" }
+				$childPropertyPath = if ([String]::IsNullOrWhiteSpace($propertyPath)) { $childPropertyName } else { '{0}.{1}' -f $propertyPath, $childPropertyName }
 				$value.$($Property.Name) = Convert-NinjaOneValue -value $Property.Value -propertyName $childPropertyName -propertyPath $childPropertyPath
 			}
 			return $value
