@@ -1644,7 +1644,7 @@ Describe 'New-NinjaOneSecureRelation' {
 	It 'posts to the correct resource endpoint' {
 		New-NinjaOneSecureRelation -entityType 'ORGANIZATION' -entityId 1 -secureValueName 'TestSecret'
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/related-items/entity/ORGANIZATION/1/secure'
 		} -Times 1 -Exactly
 	}
@@ -1658,7 +1658,7 @@ Describe 'New-NinjaOneSecureRelation' {
 	It 'includes optional body fields when provided' {
 		New-NinjaOneSecureRelation -entityType 'NODE' -entityId 5 -secureValueName 'S' -secureValueURL 'https://example.com' -secureValueUsername 'admin' -secureValuePassword 'pass' -secureValueNotes 'notes'
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/related-items/entity/NODE/5/secure' -and
 			$Body.url -eq 'https://example.com' -and
 			$Body.username -eq 'admin' -and
@@ -1669,7 +1669,7 @@ Describe 'New-NinjaOneSecureRelation' {
 	It 'skips POST when WhatIf is used' {
 		New-NinjaOneSecureRelation -entityType 'ORGANIZATION' -entityId 1 -secureValueName 'S' -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
@@ -1692,7 +1692,7 @@ Describe 'New-NinjaOneOrganisationDocument' {
 		$doc = [PSCustomObject]@{ documentName = 'Doc1'; fields = @{} }
 		New-NinjaOneOrganisationDocument -organisationId '3' -documentTemplateId '7' -organisationDocument $doc
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/organization/3/template/7/document'
 		} -Times 1 -Exactly
 	}
@@ -1708,7 +1708,7 @@ Describe 'New-NinjaOneOrganisationDocument' {
 		$doc = [PSCustomObject]@{ documentName = 'Doc1'; fields = @{} }
 		New-NinjaOneOrganisationDocument -organisationId '3' -documentTemplateId '7' -organisationDocument $doc -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
@@ -1732,7 +1732,7 @@ Describe 'New-NinjaOneOrganisationDocuments' {
 		$docs = @([PSCustomObject]@{ documentName = 'D1'; organizationId = 4 })
 		New-NinjaOneOrganisationDocuments -organisationDocuments $docs
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/organization/documents'
 		} -Times 1 -Exactly
 	}
@@ -1748,7 +1748,7 @@ Describe 'New-NinjaOneOrganisationDocuments' {
 		$docs = @([PSCustomObject]@{ documentName = 'D1'; organizationId = 4 })
 		New-NinjaOneOrganisationDocuments -organisationDocuments $docs -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
@@ -1772,7 +1772,7 @@ Describe 'New-NinjaOnePolicy' {
 		$policy = [PSCustomObject]@{ name = 'TestPolicy'; nodeClass = 'WINDOWS_SERVER'; enabled = $true }
 		New-NinjaOnePolicy -mode 'NEW' -policy $policy
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/policies'
 		} -Times 1 -Exactly
 	}
@@ -1801,14 +1801,14 @@ Describe 'New-NinjaOnePolicy' {
 
 		New-NinjaOnePolicy -mode 'COPY' -policy $policy -templatePolicyId 10
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -Exactly
 	}
 
 	It 'skips POST when WhatIf is used' {
 		$policy = [PSCustomObject]@{ name = 'TestPolicy'; nodeClass = 'WINDOWS_SERVER'; enabled = $true }
 		New-NinjaOnePolicy -mode 'NEW' -policy $policy -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
@@ -1831,7 +1831,7 @@ Describe 'Get-NinjaOneAntiVirusStatus' {
 	It 'calls the correct endpoint' {
 		Get-NinjaOneAntiVirusStatus
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/queries/antivirus-status'
 		} -Times 1 -Exactly
 	}
@@ -1846,13 +1846,13 @@ Describe 'Get-NinjaOneAntiVirusStatus' {
 	It 'applies deviceFilter parameter' {
 		Get-NinjaOneAntiVirusStatus -deviceFilter 'org = 1'
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -Exactly
 	}
 
 	It 'converts timeStampUnixEpoch to timeStamp' {
 		Get-NinjaOneAntiVirusStatus -timeStampUnixEpoch 1619712000
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -Exactly
 	}
 
 	It 'throws when no results returned' {
@@ -1874,7 +1874,7 @@ Describe 'New-NinjaOneWindowsEventPolicyCondition' {
 		$condition = [PSCustomObject]@{ displayName = 'TestCondition'; enabled = $true }
 		New-NinjaOneWindowsEventPolicyCondition -policyId 15 -windowsEventPolicyCondition $condition
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/policies/15/condition/windows-event'
 		} -Times 1 -Exactly
 	}
@@ -1890,7 +1890,7 @@ Describe 'New-NinjaOneWindowsEventPolicyCondition' {
 		$condition = [PSCustomObject]@{ displayName = 'TestCondition'; enabled = $true }
 		New-NinjaOneWindowsEventPolicyCondition -policyId 15 -windowsEventPolicyCondition $condition -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
@@ -1913,7 +1913,7 @@ Describe 'Reset-NinjaOneAlert' {
 
 		Reset-NinjaOneAlert -uid '15' -activityData $activityData
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/alert/15/reset' -and
 			$Body.reason -eq 'manual reset'
 		} -Times 1 -Exactly
@@ -1922,7 +1922,7 @@ Describe 'Reset-NinjaOneAlert' {
 	It 'uses DELETE endpoint when activityData is not provided' {
 		Reset-NinjaOneAlert -uid '20'
 
-		Should -Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/alert/20'
 		} -Times 1 -Exactly
 	}
@@ -1932,13 +1932,13 @@ Describe 'Reset-NinjaOneAlert' {
 
 		Reset-NinjaOneAlert -uid '30' -activityData $activityData -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'skips DELETE when WhatIf is used' {
 		Reset-NinjaOneAlert -uid '31' -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces API errors through New-NinjaOneError' {
@@ -1960,7 +1960,7 @@ Describe 'Get-NinjaOneTicketLogEntries' {
 	It 'calls the expected ticket log endpoint' {
 		Get-NinjaOneTicketLogEntries -ticketId '7'
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/ticketing/ticket/7/log-entry'
 		} -Times 1 -Exactly
 	}
@@ -1968,7 +1968,7 @@ Describe 'Get-NinjaOneTicketLogEntries' {
 	It 'passes ParseDateTime when switch is set' {
 		Get-NinjaOneTicketLogEntries -ticketId '8' -parseDateTime
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/ticketing/ticket/8/log-entry' -and
 			$ParseDateTime
 		} -Times 1 -Exactly
@@ -1996,7 +1996,7 @@ Describe 'Get-NinjaOneTicketLogEntries' {
 
 Describe 'New-NinjaOneDocumentTemplateFieldObject' {
 	It 'creates a Field object with required properties and type name' {
-		$result = New-NinjaOneDocumentTemplateFieldObject -label 'Field A' -Name 'fieldA' -type 'TEXT'
+		$result = New-NinjaOneDocumentTemplateFieldObject -label 'Field A' -name 'fieldA' -type 'TEXT'
 
 		$result.fieldLabel | Pester\Should -Be 'Field A'
 		$result.fieldName | Pester\Should -Be 'fieldA'
@@ -2006,7 +2006,7 @@ Describe 'New-NinjaOneDocumentTemplateFieldObject' {
 
 	It 'adds optional Field properties when specified' {
 		$options = @('Option1', 'Option2')
-		$result = New-NinjaOneDocumentTemplateFieldObject -label 'Field B' -Name 'fieldB' -description 'desc' -type 'DROPDOWN' -defaultValue 'Option1' -options $options
+		$result = New-NinjaOneDocumentTemplateFieldObject -label 'Field B' -name 'fieldB' -description 'desc' -type 'DROPDOWN' -defaultValue 'Option1' -options $options
 
 		$result.fieldDescription | Pester\Should -Be 'desc'
 		$result.fieldDefaultValue | Pester\Should -Be 'Option1'
@@ -2041,7 +2041,7 @@ Describe 'Get-NinjaOneTicketForms' {
 	It 'calls list endpoint when ticketFormId is not provided' {
 		Get-NinjaOneTicketForms
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq '/v2/ticketing/ticket-form'
 		} -Times 1 -Exactly
 	}
@@ -2049,7 +2049,7 @@ Describe 'Get-NinjaOneTicketForms' {
 	It 'calls single-item endpoint when ticketFormId is provided' {
 		Get-NinjaOneTicketForms -ticketFormId 8
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq '/v2/ticketing/ticket-form/8'
 		} -Times 1 -Exactly
 	}
@@ -2079,7 +2079,7 @@ Describe 'Get-NinjaOneTicketingContacts' {
 	It 'calls the expected ticketing contacts endpoint' {
 		Get-NinjaOneTicketingContacts
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/ticketing/contact/contacts'
 		} -Times 1 -Exactly
 	}
@@ -2109,7 +2109,7 @@ Describe 'New-NinjaOneEntityRelation' {
 	It 'posts to the expected relation endpoint' {
 		New-NinjaOneEntityRelation -entityType 'ORGANIZATION' -entityId 1 -relatedEntityType 'NODE' -relatedEntityId 50
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/related-items/entity/ORGANIZATION/1/relation' -and
 			$Body.relEntityType -eq 'NODE' -and
 			$Body.relEntityId -eq 50
@@ -2125,7 +2125,7 @@ Describe 'New-NinjaOneEntityRelation' {
 	It 'skips POST when WhatIf is used' {
 		New-NinjaOneEntityRelation -entityType 'ORGANIZATION' -entityId 1 -relatedEntityType 'NODE' -relatedEntityId 50 -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces API errors through New-NinjaOneError' {
@@ -2147,7 +2147,7 @@ Describe 'New-NinjaOneEntityRelations' {
 		$relations = @([PSCustomObject]@{ relEntityType = 'NODE'; relEntityId = 51 })
 		New-NinjaOneEntityRelations -entityType 'ORGANIZATION' -entityId 1 -entityRelations $relations
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/related-items/entity/ORGANIZATION/1/relations' -and
 			$Body[0].relEntityId -eq 51
 		} -Times 1 -Exactly
@@ -2164,7 +2164,7 @@ Describe 'New-NinjaOneEntityRelations' {
 		$relations = @([PSCustomObject]@{ relEntityType = 'NODE'; relEntityId = 51 })
 		New-NinjaOneEntityRelations -entityType 'ORGANIZATION' -entityId 1 -entityRelations $relations -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces API errors through New-NinjaOneError' {
