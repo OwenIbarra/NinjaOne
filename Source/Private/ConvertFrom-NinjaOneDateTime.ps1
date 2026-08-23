@@ -35,10 +35,14 @@ function ConvertFrom-NinjaOneDateTime {
 		#>
 		param (
 			[Object]$value,
-			[String]$propertyName
+			[String]$propertyName,
+			[String]$propertyPath
 		)
 		if ($null -eq $value) {
 			return $null
+		}
+		if ($propertyPath -match '(?i)(^|\.)cursor\.name$') {
+			return $value
 		}
 		if ($propertyName -match '(?i)ids?$') {
 			return $value
@@ -76,13 +80,16 @@ function ConvertFrom-NinjaOneDateTime {
 		}
 		if ($value -is [System.Collections.IDictionary]) {
 			foreach ($Key in @($value.Keys)) {
-				$value[$Key] = Convert-NinjaOneValue -value $value[$Key] -propertyName ([String]$Key)
+				$childPropertyName = [String]$Key
+				$childPropertyPath = if ([String]::IsNullOrWhiteSpace($propertyPath)) { $childPropertyName } else { "$propertyPath.$childPropertyName" }
+				$value[$Key] = Convert-NinjaOneValue -value $value[$Key] -propertyName $childPropertyName -propertyPath $childPropertyPath
 			}
 			return $value
 		}
 		if ($value -is [System.Collections.IList]) {
 			for ($Index = 0; $Index -lt $value.Count; $Index++) {
-				$value[$Index] = Convert-NinjaOneValue -value $value[$Index] -propertyName $propertyName
+				$childPropertyPath = if ([String]::IsNullOrWhiteSpace($propertyPath)) { $propertyName } else { "$propertyPath[$Index]" }
+				$value[$Index] = Convert-NinjaOneValue -value $value[$Index] -propertyName $propertyName -propertyPath $childPropertyPath
 			}
 			return $value
 		}
@@ -91,7 +98,9 @@ function ConvertFrom-NinjaOneDateTime {
 		}
 		if ($value -is [psobject]) {
 			foreach ($Property in $value.PSObject.Properties) {
-				$value.$($Property.Name) = Convert-NinjaOneValue -value $Property.Value -propertyName $Property.Name
+				$childPropertyName = [String]$Property.Name
+				$childPropertyPath = if ([String]::IsNullOrWhiteSpace($propertyPath)) { $childPropertyName } else { "$propertyPath.$childPropertyName" }
+				$value.$($Property.Name) = Convert-NinjaOneValue -value $Property.Value -propertyName $childPropertyName -propertyPath $childPropertyPath
 			}
 			return $value
 		}
@@ -161,5 +170,5 @@ function ConvertFrom-NinjaOneDateTime {
 		}
 		return $epochValue
 	}
-	return Convert-NinjaOneValue -value $inputObject
+	return Convert-NinjaOneValue -value $inputObject -propertyPath ''
 }

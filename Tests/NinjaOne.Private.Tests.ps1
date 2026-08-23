@@ -370,6 +370,23 @@ Describe 'ConvertFrom-NinjaOneDateTime' {
 				$result.createdAt | Pester\Should -BeOfType ([DateTime])
 			}
 		}
+
+		It 'should preserve numeric cursor names' {
+			Pester\InModuleScope $ModuleName {
+				$input = [pscustomobject]@{
+					cursor = [pscustomobject]@{
+						name = '1704112496'
+					}
+					createdAt = '2024-01-01T12:34:56Z'
+				}
+
+				$result = ConvertFrom-NinjaOneDateTime -InputObject $input
+
+				$result.cursor.name | Pester\Should -Be '1704112496'
+				$result.cursor.name | Pester\Should -BeOfType ([string])
+				$result.createdAt | Pester\Should -BeOfType ([DateTime])
+			}
+		}
 	}
 
 	Context 'Numeric edge cases' {
