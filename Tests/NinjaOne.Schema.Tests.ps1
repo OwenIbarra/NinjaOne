@@ -57,7 +57,7 @@ Describe ('<ModuleName> - Schema Completeness') -Tags 'Module' {
 			}
 		}
 
-		Context 'Metadata <_> Positional Arguments' -ForEach $MetadataElement -AllowNullOrEmptyForEach -Skip:($MetadataElement.PositionalArguments.Count -eq 0) {
+		Context 'Metadata <_> Positional Arguments' -ForEach $MetadataElement -AllowNullOrEmptyForEach -Skip:((-not $HasMetadata) -or ($MetadataElement.PositionalArguments.Count -eq 0)) {
 			## Metadata attribute has an even number of positional arguments.
 			It ('should have an even number of positional arguments') -Skip:($PositionalArguments.Count -eq 0 -or $PositionalArguments[0].Value -ceq 'IGNORE') {
 				$_.PositionalArguments.Count % 2 | Pester\Should -Be 0
