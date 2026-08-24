@@ -43,6 +43,7 @@ function Get-NinjaOneCustomFieldsSchema {
 			$RequestParams = @{
 				Resource = $Resource
 				QSCollection = $QSCollection
+				CursorParameterName = 'cursorName'
 			}
 			$CustomFieldsSchemaResults = New-NinjaOneGETRequest @RequestParams
 			if ($CustomFieldsSchemaResults) {

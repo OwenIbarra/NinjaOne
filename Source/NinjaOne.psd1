@@ -12,7 +12,7 @@
 	RootModule = '.\NinjaOne.psm1'
 
 	# Version number of this module.
-	ModuleVersion = '2.8.1'
+	ModuleVersion = '2.9.0'
 
 	# Supported PSEditions
 	# CompatiblePSEditions = @()
@@ -308,7 +308,17 @@
 			IconUri = 'https://pbs.twimg.com/profile_images/1452496768030187521/kIGQii5Y_400x400.jpg'
 
 			# ReleaseNotes of this module
-			ReleaseNotes = '## 2026-04-20'
+			ReleaseNotes = @'
+## 2026-08-21 - Version 2.9.0
+
+* Additions:
+  * Add automatic pagination to `New-NinjaOneGETRequest` for `results`/`cursor` shaped responses (most `v2/queries/*` endpoints) and `activities`/`id` shaped responses (`Get-NinjaOneActivities`), so a single call now returns the full result set across multiple pages instead of stopping after the first page.
+  * Add graceful handling of NinjaOne's HTML rate-limit response (it doesn't return a `429`) in `Invoke-NinjaOneRequest`: detect the HTML payload and retry with exponential backoff before failing.
+
+* Fixes:
+  * Respect an explicitly supplied `-pageSize` as an opt-out of auto-pagination, returning only the requested single page.
+  * Fix the `Get-NinjaOneActivities` pagination cursor to use the last returned activity's own `id` instead of the account-wide `lastActivityId` field, which never changes between pages and previously caused pagination to stop early.
+'@
 
 			# Prerelease string of this module
 			Prerelease = ''

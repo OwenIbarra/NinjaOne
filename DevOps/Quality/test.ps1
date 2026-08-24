@@ -1,4 +1,4 @@
-#requires -Module PowerShellGet, @{ ModuleName = 'Pester'; ModuleVersion = '5.5.0'; MaximumVersion = '5.999' }
+#requires -Module PowerShellGet, @{ ModuleName = 'Pester'; RequiredVersion = '6.1.0' }
 using namespace Microsoft.PackageManagement.Provider.Utility
 using namespace System.Management.Automation
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute('PSMissingParameterInlineComment', '', Justification = 'Internal test script does not require parameter descriptions.')]

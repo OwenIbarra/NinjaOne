@@ -1,4 +1,4 @@
-#Requires -Modules @{ ModuleName = 'Pester'; ModuleVersion = '5.5.0' }
+#Requires -Modules @{ ModuleName = 'Pester'; RequiredVersion = '6.1.0' }
 
 $ModuleName = 'NinjaOne'
 $RepoRoot = (Resolve-Path -Path (Join-Path -Path $PSScriptRoot -ChildPath '..\')).Path
@@ -9,8 +9,8 @@ if ([string]::IsNullOrWhiteSpace($ModulePath)) {
 
 Describe 'Set-NinjaOneOrganisation' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -18,26 +18,26 @@ Describe 'Set-NinjaOneOrganisation' {
 
 	It 'calls PATCH /v2/organization/{id} with the supplied body' {
 		Set-NinjaOneOrganisation -organisationId 7 -organisationInformation @{ name = 'Acme' } -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/7'
 		}
 	}
 
 	It 'writes an information message on 204' {
-		{ Set-NinjaOneOrganisation -organisationId 7 -organisationInformation @{ name = 'Acme' } -Confirm:$false } | Should -Not -Throw
+		{ Set-NinjaOneOrganisation -organisationId 7 -organisationInformation @{ name = 'Acme' } -Confirm:$false } | Pester\Should -Not -Throw
 	}
 
 	It 'delegates PATCH failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'org-patch-failed' }
-		{ Set-NinjaOneOrganisation -organisationId 7 -organisationInformation @{ name = 'X' } -Confirm:$false } | Should -Throw '*org-patch-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'org-patch-failed' }
+		{ Set-NinjaOneOrganisation -organisationId 7 -organisationInformation @{ name = 'X' } -Confirm:$false } | Pester\Should -Throw '*org-patch-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneLocation' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -45,26 +45,26 @@ Describe 'Set-NinjaOneLocation' {
 
 	It 'calls PATCH /v2/organization/{id}/locations/{locationId} with the supplied body' {
 		Set-NinjaOneLocation -organisationId 3 -locationId 9 -locationInformation @{ name = 'HQ' } -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/3/locations/9'
 		}
 	}
 
 	It 'writes an information message on 204' {
-		{ Set-NinjaOneLocation -organisationId 3 -locationId 9 -locationInformation @{ name = 'HQ' } -Confirm:$false } | Should -Not -Throw
+		{ Set-NinjaOneLocation -organisationId 3 -locationId 9 -locationInformation @{ name = 'HQ' } -Confirm:$false } | Pester\Should -Not -Throw
 	}
 
 	It 'delegates PATCH failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'location-patch-failed' }
-		{ Set-NinjaOneLocation -organisationId 3 -locationId 9 -locationInformation @{ name = 'X' } -Confirm:$false } | Should -Throw '*location-patch-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'location-patch-failed' }
+		{ Set-NinjaOneLocation -organisationId 3 -locationId 9 -locationInformation @{ name = 'X' } -Confirm:$false } | Pester\Should -Throw '*location-patch-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneDevice' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -72,26 +72,26 @@ Describe 'Set-NinjaOneDevice' {
 
 	It 'calls PATCH /v2/device/{id} with the supplied body' {
 		Set-NinjaOneDevice -deviceId 42 -deviceInformation @{ displayName = 'WebServer01' } -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/42'
 		}
 	}
 
 	It 'writes an information message on 204' {
-		{ Set-NinjaOneDevice -deviceId 42 -deviceInformation @{ displayName = 'WebServer01' } -Confirm:$false } | Should -Not -Throw
+		{ Set-NinjaOneDevice -deviceId 42 -deviceInformation @{ displayName = 'WebServer01' } -Confirm:$false } | Pester\Should -Not -Throw
 	}
 
 	It 'delegates PATCH failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'device-patch-failed' }
-		{ Set-NinjaOneDevice -deviceId 42 -deviceInformation @{ displayName = 'X' } -Confirm:$false } | Should -Throw '*device-patch-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'device-patch-failed' }
+		{ Set-NinjaOneDevice -deviceId 42 -deviceInformation @{ displayName = 'X' } -Confirm:$false } | Pester\Should -Throw '*device-patch-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneOrganisationCustomFields' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -99,26 +99,26 @@ Describe 'Set-NinjaOneOrganisationCustomFields' {
 
 	It 'calls PATCH /v2/organization/{id}/custom-fields with the supplied body' {
 		Set-NinjaOneOrganisationCustomFields -organisationId 5 -organisationCustomFields @{ field1 = 'val1' } -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/5/custom-fields'
 		}
 	}
 
 	It 'writes an information message on 204' {
-		{ Set-NinjaOneOrganisationCustomFields -organisationId 5 -organisationCustomFields @{ f = 'v' } -Confirm:$false } | Should -Not -Throw
+		{ Set-NinjaOneOrganisationCustomFields -organisationId 5 -organisationCustomFields @{ f = 'v' } -Confirm:$false } | Pester\Should -Not -Throw
 	}
 
 	It 'delegates PATCH failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'orgcf-patch-failed' }
-		{ Set-NinjaOneOrganisationCustomFields -organisationId 5 -organisationCustomFields @{ f = 'v' } -Confirm:$false } | Should -Throw '*orgcf-patch-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'orgcf-patch-failed' }
+		{ Set-NinjaOneOrganisationCustomFields -organisationId 5 -organisationCustomFields @{ f = 'v' } -Confirm:$false } | Pester\Should -Throw '*orgcf-patch-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneDeviceCustomFields' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { return 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -126,26 +126,26 @@ Describe 'Set-NinjaOneDeviceCustomFields' {
 
 	It 'calls PATCH /v2/device/{id}/custom-fields with the supplied body' {
 		Set-NinjaOneDeviceCustomFields -deviceId 11 -deviceCustomFields @{ field1 = 'val1' } -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/11/custom-fields'
 		}
 	}
 
 	It 'writes an information message on 204' {
-		{ Set-NinjaOneDeviceCustomFields -deviceId 11 -deviceCustomFields @{ f = 'v' } -Confirm:$false } | Should -Not -Throw
+		{ Set-NinjaOneDeviceCustomFields -deviceId 11 -deviceCustomFields @{ f = 'v' } -Confirm:$false } | Pester\Should -Not -Throw
 	}
 
 	It 'delegates PATCH failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'devcf-patch-failed' }
-		{ Set-NinjaOneDeviceCustomFields -deviceId 11 -deviceCustomFields @{ f = 'v' } -Confirm:$false } | Should -Throw '*devcf-patch-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'devcf-patch-failed' }
+		{ Set-NinjaOneDeviceCustomFields -deviceId 11 -deviceCustomFields @{ f = 'v' } -Confirm:$false } | Pester\Should -Throw '*devcf-patch-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'New-NinjaOneTicket' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { return [PSCustomObject]@{ id = 99; subject = 'Test ticket' } }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { return [PSCustomObject]@{ id = 99; subject = 'Test ticket' } }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -153,27 +153,27 @@ Describe 'New-NinjaOneTicket' {
 
 	It 'calls POST /v2/ticketing/ticket with the ticket body' {
 		New-NinjaOneTicket -ticket @{ subject = 'Test' } -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/ticketing/ticket'
 		}
 	}
 
 	It 'returns the created ticket when -show is specified' {
 		$result = New-NinjaOneTicket -ticket @{ subject = 'Test' } -show -Confirm:$false
-		$result.id | Should -Be 99
+		$result.id | Pester\Should -Be 99
 	}
 
 	It 'delegates POST failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'ticket-post-failed' }
-		{ New-NinjaOneTicket -ticket @{ subject = 'Test' } -Confirm:$false } | Should -Throw '*ticket-post-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'ticket-post-failed' }
+		{ New-NinjaOneTicket -ticket @{ subject = 'Test' } -Confirm:$false } | Pester\Should -Throw '*ticket-post-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneTicket' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { return 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { return 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -181,26 +181,26 @@ Describe 'Set-NinjaOneTicket' {
 
 	It 'calls PUT /v2/ticketing/ticket/{ticketId} with the ticket body' {
 		Set-NinjaOneTicket -ticketId 50 -ticket @{ subject = 'Updated' } -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/ticketing/ticket/50'
 		}
 	}
 
 	It 'writes an information message on 204' {
-		{ Set-NinjaOneTicket -ticketId 50 -ticket @{ subject = 'Updated' } -Confirm:$false } | Should -Not -Throw
+		{ Set-NinjaOneTicket -ticketId 50 -ticket @{ subject = 'Updated' } -Confirm:$false } | Pester\Should -Not -Throw
 	}
 
 	It 'delegates PUT failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { throw 'ticket-put-failed' }
-		{ Set-NinjaOneTicket -ticketId 50 -ticket @{ subject = 'X' } -Confirm:$false } | Should -Throw '*ticket-put-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { throw 'ticket-put-failed' }
+		{ Set-NinjaOneTicket -ticketId 50 -ticket @{ subject = 'X' } -Confirm:$false } | Pester\Should -Throw '*ticket-put-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneDeviceApproval' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { return 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { return 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -208,29 +208,29 @@ Describe 'Set-NinjaOneDeviceApproval' {
 
 	It 'calls POST /v2/devices/approval/APPROVE with the device id list' {
 		Set-NinjaOneDeviceApproval -mode 'APPROVE' -deviceIds @(1, 2) -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/devices/approval/APPROVE'
 		}
 	}
 
 	It 'calls POST /v2/devices/approval/REJECT for reject mode' {
 		Set-NinjaOneDeviceApproval -mode 'REJECT' -deviceIds @(3) -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/devices/approval/REJECT'
 		}
 	}
 
 	It 'delegates POST failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'approval-post-failed' }
-		{ Set-NinjaOneDeviceApproval -mode 'APPROVE' -deviceIds @(1) -Confirm:$false } | Should -Throw '*approval-post-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'approval-post-failed' }
+		{ Set-NinjaOneDeviceApproval -mode 'APPROVE' -deviceIds @(1) -Confirm:$false } | Pester\Should -Throw '*approval-post-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneOrganisationPolicies' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { return 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { return 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -238,7 +238,7 @@ Describe 'Set-NinjaOneOrganisationPolicies' {
 
 	It 'calls PUT /v2/organization/{id}/policies for Single parameter set' {
 		Set-NinjaOneOrganisationPolicies -organisationId 4 -nodeRoleId 10 -policyId 20 -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/4/policies'
 		}
 	}
@@ -246,27 +246,27 @@ Describe 'Set-NinjaOneOrganisationPolicies' {
 	It 'calls PUT /v2/organization/{id}/policies for Multiple parameter set' {
 		$assignments = @(@{ nodeRoleId = 10; policyId = 20 }, @{ nodeRoleId = 11; policyId = 21 })
 		Set-NinjaOneOrganisationPolicies -organisationId 4 -policyAssignments $assignments -Confirm:$false
-		Assert-MockCalled -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/4/policies'
 		}
 	}
 
 	It 'delegates PUT failures to New-NinjaOneError for Single parameter set' {
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { throw 'policies-put-failed' }
-		{ Set-NinjaOneOrganisationPolicies -organisationId 4 -nodeRoleId 10 -policyId 20 -Confirm:$false } | Should -Throw '*policies-put-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { throw 'policies-put-failed' }
+		{ Set-NinjaOneOrganisationPolicies -organisationId 4 -nodeRoleId 10 -policyId 20 -Confirm:$false } | Pester\Should -Throw '*policies-put-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneDeviceDisks' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ name = 'Disk0' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -275,28 +275,28 @@ Describe 'Get-NinjaOneDeviceDisks' {
 	It 'calls the device disks endpoint for the supplied id' {
 		$null = Get-NinjaOneDeviceDisks -deviceId 88
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/88/disks'
 		}
 	}
 
 	It 'delegates GET failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-disks-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-disks-failed' }
 
-		{ Get-NinjaOneDeviceDisks -deviceId 88 } | Should -Throw '*device-disks-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDeviceDisks -deviceId 88 } | Pester\Should -Throw '*device-disks-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneDeviceNetworkInterfaces' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ name = 'Ethernet0' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -305,28 +305,28 @@ Describe 'Get-NinjaOneDeviceNetworkInterfaces' {
 	It 'calls the device network interfaces endpoint for the supplied id' {
 		$null = Get-NinjaOneDeviceNetworkInterfaces -deviceId 55
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/55/network-interfaces'
 		}
 	}
 
 	It 'delegates GET failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-nics-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-nics-failed' }
 
-		{ Get-NinjaOneDeviceNetworkInterfaces -deviceId 55 } | Should -Throw '*device-nics-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDeviceNetworkInterfaces -deviceId 55 } | Pester\Should -Throw '*device-nics-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneDeviceVolumes' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ name = 'C:' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -335,7 +335,7 @@ Describe 'Get-NinjaOneDeviceVolumes' {
 	It 'calls the device volumes endpoint for the supplied id' {
 		$null = Get-NinjaOneDeviceVolumes -deviceId 101
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/101/volumes'
 		}
 	}
@@ -343,28 +343,28 @@ Describe 'Get-NinjaOneDeviceVolumes' {
 	It 'passes include as a query parameter' {
 		$null = Get-NinjaOneDeviceVolumes -deviceId 101 -include 'bl'
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('include')
 		}
 	}
 
 	It 'delegates GET failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-volumes-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-volumes-failed' }
 
-		{ Get-NinjaOneDeviceVolumes -deviceId 101 } | Should -Throw '*device-volumes-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDeviceVolumes -deviceId 101 } | Pester\Should -Throw '*device-volumes-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneTicketAttributes' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Priority' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -373,28 +373,28 @@ Describe 'Get-NinjaOneTicketAttributes' {
 	It 'calls the ticket attributes endpoint' {
 		$null = Get-NinjaOneTicketAttributes
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/ticketing/attributes'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTicketAttributes } | Should -Throw '*No ticket attributes found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneTicketAttributes } | Pester\Should -Throw '*No ticket attributes found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneTicketBoards' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 10; name = 'Default Board' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -403,25 +403,25 @@ Describe 'Get-NinjaOneTicketBoards' {
 	It 'calls the ticket boards endpoint' {
 		$null = Get-NinjaOneTicketBoards
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/ticketing/trigger/boards'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTicketBoards } | Should -Throw '*No boards found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneTicketBoards } | Pester\Should -Throw '*No boards found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneTicketStatuses' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 20; name = 'Open' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -430,30 +430,30 @@ Describe 'Get-NinjaOneTicketStatuses' {
 	It 'calls the ticket statuses endpoint and returns statuses' {
 		$result = Get-NinjaOneTicketStatuses
 
-		$result[0].name | Should -Be 'Open'
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result[0].name | Pester\Should -Be 'Open'
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/ticketing/statuses'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTicketStatuses } | Should -Throw '*No ticket statuses found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneTicketStatuses } | Pester\Should -Throw '*No ticket statuses found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Additional single-resource query coverage' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource)
 			[pscustomobject]@{ id = 25; resource = $Resource }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -462,52 +462,52 @@ Describe 'Additional single-resource query coverage' {
 	It 'gets an end user by id' {
 		$result = Get-NinjaOneEndUser -id 25
 
-		$result.resource | Should -Be 'v2/user/end-user/25'
+		$result.resource | Pester\Should -Be 'v2/user/end-user/25'
 	}
 
 	It 'delegates missing end user results' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneEndUser -id 25 } | Should -Throw '*End user 25 not found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneEndUser -id 25 } | Pester\Should -Throw '*End user 25 not found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets a technician by id' {
 		$result = Get-NinjaOneTechnician -id 26
 
-		$result.resource | Should -Be 'v2/user/technician/26'
+		$result.resource | Pester\Should -Be 'v2/user/technician/26'
 	}
 
 	It 'delegates missing technician results' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTechnician -id 26 } | Should -Throw '*Technician 26 not found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneTechnician -id 26 } | Pester\Should -Throw '*Technician 26 not found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets a tab by id' {
 		$result = Get-NinjaOneTab -tabId 27
 
-		$result.resource | Should -Be 'v2/tab/27'
+		$result.resource | Pester\Should -Be 'v2/tab/27'
 	}
 
 	It 'delegates missing tab results' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTab -tabId 27 } | Should -Throw '*Tab 27 not found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneTab -tabId 27 } | Pester\Should -Throw '*Tab 27 not found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneBackupJobs' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; status = 'COMPLETED' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -516,7 +516,7 @@ Describe 'Get-NinjaOneBackupJobs' {
 	It 'calls the backup jobs endpoint' {
 		$null = Get-NinjaOneBackupJobs
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq '/v2/backup/jobs'
 		}
 	}
@@ -524,7 +524,7 @@ Describe 'Get-NinjaOneBackupJobs' {
 	It 'preprocesses single status into a statusFilter and calls the endpoint' {
 		$null = Get-NinjaOneBackupJobs -status 'RUNNING'
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq '/v2/backup/jobs'
 		}
 	}
@@ -533,7 +533,7 @@ Describe 'Get-NinjaOneBackupJobs' {
 	It 'preprocesses startTimeAfter into a startTimeFilter and calls the endpoint' {
 		$null = Get-NinjaOneBackupJobs -startTimeAfter (Get-Date '2024-01-01')
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq '/v2/backup/jobs'
 		}
 	}
@@ -541,28 +541,28 @@ Describe 'Get-NinjaOneBackupJobs' {
 	It 'preprocesses startTimeBetween into a startTimeFilter and calls the endpoint' {
 		$null = Get-NinjaOneBackupJobs -startTimeBetween @((Get-Date '2024-01-01'), (Get-Date '2024-01-02'))
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq '/v2/backup/jobs'
 		}
 	}
 
 	It 'delegates GET failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'backup-jobs-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'backup-jobs-failed' }
 
-		{ Get-NinjaOneBackupJobs } | Should -Throw '*backup-jobs-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneBackupJobs } | Pester\Should -Throw '*backup-jobs-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneIntegrityCheckJobs' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; status = 'COMPLETED' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -571,7 +571,7 @@ Describe 'Get-NinjaOneIntegrityCheckJobs' {
 	It 'calls the integrity check jobs endpoint' {
 		$null = Get-NinjaOneIntegrityCheckJobs
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq '/v2/backup/integrity-check-jobs'
 		}
 	}
@@ -579,7 +579,7 @@ Describe 'Get-NinjaOneIntegrityCheckJobs' {
 	It 'preprocesses single status into a statusFilter and calls the endpoint' {
 		$null = Get-NinjaOneIntegrityCheckJobs -status 'RUNNING'
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq '/v2/backup/integrity-check-jobs'
 		}
 	}
@@ -587,7 +587,7 @@ Describe 'Get-NinjaOneIntegrityCheckJobs' {
 	It 'preprocesses startTimeAfter into a startTimeFilter and calls the endpoint' {
 		$null = Get-NinjaOneIntegrityCheckJobs -startTimeAfter (Get-Date '2024-01-01')
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq '/v2/backup/integrity-check-jobs'
 		}
 	}
@@ -595,28 +595,28 @@ Describe 'Get-NinjaOneIntegrityCheckJobs' {
 	It 'preprocesses startTimeBetween into a startTimeFilter and calls the endpoint' {
 		$null = Get-NinjaOneIntegrityCheckJobs -startTimeBetween @((Get-Date '2024-01-01'), (Get-Date '2024-01-02'))
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq '/v2/backup/integrity-check-jobs'
 		}
 	}
 
 	It 'delegates GET failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'integrity-jobs-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'integrity-jobs-failed' }
 
-		{ Get-NinjaOneIntegrityCheckJobs } | Should -Throw '*integrity-jobs-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneIntegrityCheckJobs } | Pester\Should -Throw '*integrity-jobs-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneTickets' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ id = 1; subject = 'Test ticket' }
 		}
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ data = @([pscustomobject]@{ id = 1; subject = 'Test ticket' }); metadata = [pscustomobject]@{ total = 1 } }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -625,7 +625,7 @@ Describe 'Get-NinjaOneTickets' {
 	It 'uses GET to the single ticket endpoint for the Single parameter set' {
 		$null = Get-NinjaOneTickets -ticketId 7
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/ticketing/ticket/7'
 		}
 	}
@@ -633,7 +633,7 @@ Describe 'Get-NinjaOneTickets' {
 	It 'uses POST to the board run endpoint for the Board parameter set' {
 		$null = Get-NinjaOneTickets -boardId 'board-1'
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/ticketing/trigger/board/board-1/run'
 		}
 	}
@@ -641,7 +641,7 @@ Describe 'Get-NinjaOneTickets' {
 	It 'builds board request body fields and parseDateTime when board options are supplied' {
 		$null = Get-NinjaOneTickets -boardId 'board-1' -pageSize 25 -searchCriteria 'router' -includeColumns @('subject') -lastCursorId 'cursor-1' -parseDateTime
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/ticketing/trigger/board/board-1/run' -and
 			$Body.pageSize -eq 25 -and
 			$Body.searchCriteria -eq 'router' -and
@@ -654,35 +654,35 @@ Describe 'Get-NinjaOneTickets' {
 	It 'returns only the data property from Board response when includeMetadata is not set' {
 		$result = Get-NinjaOneTickets -boardId 'board-1'
 
-		$result | Should -Not -BeNullOrEmpty
+		$result | Pester\Should -Not -BeNullOrEmpty
 		# result should be the .data array, not the full response object
-		$result[0].id | Should -Be 1
+		$result[0].id | Pester\Should -Be 1
 	}
 
 	It 'returns the full response from Board when includeMetadata is set' {
 		$result = Get-NinjaOneTickets -boardId 'board-1' -includeMetadata
 
-		$result.data | Should -Not -BeNullOrEmpty
-		$result.metadata | Should -Not -BeNullOrEmpty
+		$result.data | Pester\Should -Not -BeNullOrEmpty
+		$result.metadata | Pester\Should -Not -BeNullOrEmpty
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTickets -ticketId 7 } | Should -Throw '*No tickets found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneTickets -ticketId 7 } | Pester\Should -Throw '*No tickets found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneRelatedItems' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; type = 'DOCUMENT' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -691,7 +691,7 @@ Describe 'Get-NinjaOneRelatedItems' {
 	It 'calls v2/related-items for the all parameter set' {
 		$null = Get-NinjaOneRelatedItems -all
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/related-items'
 		}
 	}
@@ -699,7 +699,7 @@ Describe 'Get-NinjaOneRelatedItems' {
 	It 'calls the entity-type route when relatedTo is used with entityType only' {
 		$null = Get-NinjaOneRelatedItems -relatedTo -entityType 'ORGANIZATION'
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/related-items/with-entity-type/ORGANIZATION'
 		}
 	}
@@ -707,7 +707,7 @@ Describe 'Get-NinjaOneRelatedItems' {
 	It 'calls the entity route when relatedTo is used with entityType and entityId' {
 		$null = Get-NinjaOneRelatedItems -relatedTo -entityType 'ORGANIZATION' -entityId 5
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/related-items/with-entity/ORGANIZATION/5'
 		}
 	}
@@ -715,7 +715,7 @@ Describe 'Get-NinjaOneRelatedItems' {
 	It 'calls the related-entity-type route when relatedFrom is used with entityType only' {
 		$null = Get-NinjaOneRelatedItems -relatedFrom -entityType 'ORGANIZATION'
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/related-items/with-related-entity-type/ORGANIZATION'
 		}
 	}
@@ -723,28 +723,28 @@ Describe 'Get-NinjaOneRelatedItems' {
 	It 'calls the related-entity route when relatedFrom is used with entityType and entityId' {
 		$null = Get-NinjaOneRelatedItems -relatedFrom -entityType 'ORGANIZATION' -entityId 5
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/related-items/with-related-entity/ORGANIZATION/5'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneRelatedItems -all } | Should -Throw '*No related items found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneRelatedItems -all } | Pester\Should -Throw '*No related items found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneOrganisationDocuments' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Doc 1' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -753,7 +753,7 @@ Describe 'Get-NinjaOneOrganisationDocuments' {
 	It 'calls the single-organisation documents endpoint when organisationId is supplied' {
 		$null = Get-NinjaOneOrganisationDocuments -organisationId 12
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/12/documents'
 		}
 	}
@@ -761,28 +761,28 @@ Describe 'Get-NinjaOneOrganisationDocuments' {
 	It 'calls the all-organisations documents endpoint when no organisationId is supplied' {
 		$null = Get-NinjaOneOrganisationDocuments
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/documents'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneOrganisationDocuments -organisationId 12 } | Should -Throw '*No documents found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneOrganisationDocuments -organisationId 12 } | Pester\Should -Throw '*No documents found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneTicketingUsers' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Alice Tech' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -791,7 +791,7 @@ Describe 'Get-NinjaOneTicketingUsers' {
 	It 'calls the ticketing users endpoint' {
 		$null = Get-NinjaOneTicketingUsers
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/ticketing/app-user-contact'
 		}
 	}
@@ -799,28 +799,28 @@ Describe 'Get-NinjaOneTicketingUsers' {
 	It 'passes userType as a query parameter' {
 		$null = Get-NinjaOneTicketingUsers -userType 'TECHNICIAN'
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('userType')
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTicketingUsers } | Should -Throw '*No ticketing users found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneTicketingUsers } | Pester\Should -Throw '*No ticketing users found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneDeviceOSPatchInstalls' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ patchId = 42; status = 'INSTALLED' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -829,7 +829,7 @@ Describe 'Get-NinjaOneDeviceOSPatchInstalls' {
 	It 'calls the device OS patch installs endpoint for the supplied device id' {
 		$null = Get-NinjaOneDeviceOSPatchInstalls -deviceId 77
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/77/os-patch-installs'
 		}
 	}
@@ -837,7 +837,7 @@ Describe 'Get-NinjaOneDeviceOSPatchInstalls' {
 	It 'converts installedAfter DateTime to epoch and calls the endpoint' {
 		$null = Get-NinjaOneDeviceOSPatchInstalls -deviceId 77 -installedAfter (Get-Date '2024-01-01')
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/77/os-patch-installs'
 		}
 	}
@@ -845,28 +845,28 @@ Describe 'Get-NinjaOneDeviceOSPatchInstalls' {
 	It 'accepts installedAfterUnixEpoch and calls the endpoint' {
 		$null = Get-NinjaOneDeviceOSPatchInstalls -deviceId 77 -installedAfterUnixEpoch 1704067200
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/77/os-patch-installs'
 		}
 	}
 
 	It 'delegates GET failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'os-patch-installs-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'os-patch-installs-failed' }
 
-		{ Get-NinjaOneDeviceOSPatchInstalls -deviceId 77 } | Should -Throw '*os-patch-installs-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDeviceOSPatchInstalls -deviceId 77 } | Pester\Should -Throw '*os-patch-installs-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneDeviceSoftwarePatchInstalls' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ patchId = 99; status = 'INSTALLED' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -875,7 +875,7 @@ Describe 'Get-NinjaOneDeviceSoftwarePatchInstalls' {
 	It 'calls the device software patch installs endpoint for the supplied device id' {
 		$null = Get-NinjaOneDeviceSoftwarePatchInstalls -deviceId 33
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/33/software-patch-installs'
 		}
 	}
@@ -883,7 +883,7 @@ Describe 'Get-NinjaOneDeviceSoftwarePatchInstalls' {
 	It 'converts installedAfter DateTime to epoch and calls the endpoint' {
 		$null = Get-NinjaOneDeviceSoftwarePatchInstalls -deviceId 33 -installedAfter (Get-Date '2024-01-01')
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/33/software-patch-installs'
 		}
 	}
@@ -891,25 +891,25 @@ Describe 'Get-NinjaOneDeviceSoftwarePatchInstalls' {
 	It 'accepts installedBeforeUnixEpoch and calls the endpoint' {
 		$null = Get-NinjaOneDeviceSoftwarePatchInstalls -deviceId 33 -installedBeforeUnixEpoch 1704153600
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/33/software-patch-installs'
 		}
 	}
 
 	It 'delegates GET failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'sw-patch-installs-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'sw-patch-installs-failed' }
 
-		{ Get-NinjaOneDeviceSoftwarePatchInstalls -deviceId 33 } | Should -Throw '*sw-patch-installs-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDeviceSoftwarePatchInstalls -deviceId 33 } | Pester\Should -Throw '*sw-patch-installs-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'New-NinjaOneDocumentTemplate' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ id = 500; name = 'Template A' }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -925,7 +925,7 @@ Describe 'New-NinjaOneDocumentTemplate' {
 
 		$null = New-NinjaOneDocumentTemplate -Name 'Template A' -fields $fields -description 'desc' -allowMultiple -mandatory -availableToAllTechnicians -allowedTechnicianRoles @(1, 2) -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/document-templates' -and
 			$Body.name -eq 'Template A' -and
 			$Body.description -eq 'desc' -and
@@ -947,12 +947,12 @@ Describe 'New-NinjaOneDocumentTemplate' {
 
 		$result = New-NinjaOneDocumentTemplate -Name 'Template A' -fields $fields -show -Confirm:$false
 
-		$result.id | Should -Be 500
-		$result.name | Should -Be 'Template A'
+		$result.id | Pester\Should -Be 500
+		$result.name | Pester\Should -Be 'Template A'
 	}
 
 	It 'delegates POST failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'doc-template-create-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'doc-template-create-failed' }
 		$field = [pscustomobject]@{
 			fieldName = 'Hostname'
 			fieldType = 'TEXT'
@@ -960,15 +960,15 @@ Describe 'New-NinjaOneDocumentTemplate' {
 		$field.PSObject.TypeNames.Insert(0, 'DocumentTemplateField')
 		$fields = @($field)
 
-		{ New-NinjaOneDocumentTemplate -Name 'Template A' -fields $fields -Confirm:$false } | Should -Throw '*doc-template-create-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ New-NinjaOneDocumentTemplate -Name 'Template A' -fields $fields -Confirm:$false } | Pester\Should -Throw '*doc-template-create-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneDocumentTemplate' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -984,7 +984,7 @@ Describe 'Set-NinjaOneDocumentTemplate' {
 
 		$null = Set-NinjaOneDocumentTemplate -documentTemplateId 5 -Name 'Template B' -description 'updated' -allowMultiple -mandatory -fields $fields -availableToAllTechnicians -allowedTechnicianRoles @(1) -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/document-templates/5' -and
 			$Body.name -eq 'Template B' -and
 			$Body.description -eq 'updated' -and
@@ -997,7 +997,7 @@ Describe 'Set-NinjaOneDocumentTemplate' {
 	}
 
 	It 'returns update response when -show is supplied' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ id = 5; name = 'Template B' }
 		}
 		$fields = @(
@@ -1009,7 +1009,7 @@ Describe 'Set-NinjaOneDocumentTemplate' {
 
 		$result = Set-NinjaOneDocumentTemplate -documentTemplateId 5 -Name 'Template B' -fields $fields -show -Confirm:$false
 
-		$result.id | Should -Be 5
+		$result.id | Pester\Should -Be 5
 	}
 
 	It 'throws validation error when DROPDOWN field has no fieldContent' {
@@ -1020,7 +1020,7 @@ Describe 'Set-NinjaOneDocumentTemplate' {
 			}
 		)
 
-		{ Set-NinjaOneDocumentTemplate -documentTemplateId 5 -Name 'Template B' -fields $fields -Confirm:$false } | Should -Throw '*Field content must be specified*'
+		{ Set-NinjaOneDocumentTemplate -documentTemplateId 5 -Name 'Template B' -fields $fields -Confirm:$false } | Pester\Should -Throw '*Field content must be specified*'
 	}
 
 	It 'throws validation error when DROPDOWN fieldContent has no values' {
@@ -1034,11 +1034,11 @@ Describe 'Set-NinjaOneDocumentTemplate' {
 			}
 		)
 
-		{ Set-NinjaOneDocumentTemplate -documentTemplateId 5 -Name 'Template B' -fields $fields -Confirm:$false } | Should -Throw '*Field content values must be specified*'
+		{ Set-NinjaOneDocumentTemplate -documentTemplateId 5 -Name 'Template B' -fields $fields -Confirm:$false } | Pester\Should -Throw '*Field content values must be specified*'
 	}
 
 	It 'delegates request failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'doc-template-update-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'doc-template-update-failed' }
 		$fields = @(
 			@{
 				fieldName = 'Hostname'
@@ -1046,20 +1046,20 @@ Describe 'Set-NinjaOneDocumentTemplate' {
 			}
 		)
 
-		{ Set-NinjaOneDocumentTemplate -documentTemplateId 5 -Name 'Template B' -fields $fields -Confirm:$false } | Should -Throw '*doc-template-update-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Set-NinjaOneDocumentTemplate -documentTemplateId 5 -Name 'Template B' -fields $fields -Confirm:$false } | Pester\Should -Throw '*doc-template-update-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneSoftwarePatchInstalls' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; status = 'INSTALLED' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1068,7 +1068,7 @@ Describe 'Get-NinjaOneSoftwarePatchInstalls' {
 	It 'calls the software patch installs query endpoint' {
 		$null = Get-NinjaOneSoftwarePatchInstalls
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/queries/software-patch-installs'
 		}
 	}
@@ -1076,7 +1076,7 @@ Describe 'Get-NinjaOneSoftwarePatchInstalls' {
 	It 'promotes installedBeforeUnixEpoch to installedBefore in query parameters' {
 		$null = Get-NinjaOneSoftwarePatchInstalls -installedBeforeUnixEpoch 1619712000
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('installedBefore') -and -not $Parameters.ContainsKey('installedBeforeUnixEpoch')
 		}
 	}
@@ -1084,28 +1084,28 @@ Describe 'Get-NinjaOneSoftwarePatchInstalls' {
 	It 'promotes timeStampUnixEpoch to timeStamp in query parameters' {
 		$null = Get-NinjaOneSoftwarePatchInstalls -timeStampUnixEpoch 1619712000
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('timeStamp') -and -not $Parameters.ContainsKey('timeStampUnixEpoch')
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneSoftwarePatchInstalls } | Should -Throw '*No software patch installs found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneSoftwarePatchInstalls } | Pester\Should -Throw '*No software patch installs found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneOSPatchInstalls' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; status = 'INSTALLED' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1114,7 +1114,7 @@ Describe 'Get-NinjaOneOSPatchInstalls' {
 	It 'calls the OS patch installs query endpoint' {
 		$null = Get-NinjaOneOSPatchInstalls
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/queries/os-patch-installs'
 		}
 	}
@@ -1122,7 +1122,7 @@ Describe 'Get-NinjaOneOSPatchInstalls' {
 	It 'promotes installedAfterUnixEpoch to installedAfter in query parameters' {
 		$null = Get-NinjaOneOSPatchInstalls -installedAfterUnixEpoch 1619712000
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('installedAfter') -and -not $Parameters.ContainsKey('installedAfterUnixEpoch')
 		}
 	}
@@ -1130,25 +1130,25 @@ Describe 'Get-NinjaOneOSPatchInstalls' {
 	It 'promotes timeStampUnixEpoch to timeStamp in query parameters' {
 		$null = Get-NinjaOneOSPatchInstalls -timeStampUnixEpoch 1619712000
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('timeStamp') -and -not $Parameters.ContainsKey('timeStampUnixEpoch')
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneOSPatchInstalls } | Should -Throw '*No OS patch installs found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneOSPatchInstalls } | Pester\Should -Throw '*No OS patch installs found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneCustomField' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ fieldName = 'department'; updated = $true }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1159,7 +1159,7 @@ Describe 'Set-NinjaOneCustomField' {
 
 		$null = Set-NinjaOneCustomField -fieldName 'department' -customField $body -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/custom-fields/field-name/department' -and
 			$Body.description -eq 'Department of the user'
 		}
@@ -1170,7 +1170,7 @@ Describe 'Set-NinjaOneCustomField' {
 
 		$result = Set-NinjaOneCustomField -fieldName 'department' -customField $body -Confirm:$false
 
-		$result.updated | Should -Be $true
+		$result.updated | Pester\Should -Be $true
 	}
 
 	It 'does not call PUT when -WhatIf is used' {
@@ -1178,31 +1178,31 @@ Describe 'Set-NinjaOneCustomField' {
 
 		$null = Set-NinjaOneCustomField -fieldName 'department' -customField $body -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates request failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { throw 'custom-field-update-failed' }
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { throw 'custom-field-update-failed' }
 		$body = @{ description = 'Department of the user' }
 
-		{ Set-NinjaOneCustomField -fieldName 'department' -customField $body -Confirm:$false } | Should -Throw '*custom-field-update-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Set-NinjaOneCustomField -fieldName 'department' -customField $body -Confirm:$false } | Pester\Should -Throw '*custom-field-update-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Invoke-NinjaOneDeviceScript' {
 	BeforeEach {
-		Mock -CommandName Get-NinjaOneDevice -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneDevice -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ id = 44; SystemName = 'WS-44' }
 		}
-		Mock -CommandName Get-NinjaOneDeviceScriptingOptions -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneDeviceScriptingOptions -ModuleName $ModuleName -MockWith {
 			@(
 				[pscustomobject]@{ id = 12; uid = [guid]'11111111-1111-1111-1111-111111111111'; type = 'SCRIPT'; Name = 'Collect Logs' },
 				[pscustomobject]@{ id = 99; uid = [guid]'22222222-2222-2222-2222-222222222222'; type = 'ACTION'; Name = 'Restart Service' }
 			)
 		}
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1211,7 +1211,7 @@ Describe 'Invoke-NinjaOneDeviceScript' {
 	It 'posts script run requests to v2/device/{id}/script/run with script id' {
 		$null = Invoke-NinjaOneDeviceScript -deviceId 44 -type 'SCRIPT' -scriptId 12 -runAs 'system' -parameters 'mode=quick'
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/44/script/run' -and
 			$Body.type -eq 'SCRIPT' -and
 			$Body.id -eq 12 -and
@@ -1224,7 +1224,7 @@ Describe 'Invoke-NinjaOneDeviceScript' {
 		$actionUId = [guid]'22222222-2222-2222-2222-222222222222'
 		$null = Invoke-NinjaOneDeviceScript -deviceId 44 -type 'ACTION' -actionUId $actionUId -runAs 'loggedonuser'
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/44/script/run' -and
 			$Body.type -eq 'ACTION' -and
 			$Body.uid -eq $actionUId -and
@@ -1236,31 +1236,31 @@ Describe 'Invoke-NinjaOneDeviceScript' {
 	It 'returns 204 when -show is supplied' {
 		$result = Invoke-NinjaOneDeviceScript -deviceId 44 -type 'SCRIPT' -scriptId 12 -runAs 'system' -show
 
-		$result | Should -Be 204
+		$result | Pester\Should -Be 204
 	}
 
 	It 'delegates not-found script failures to New-NinjaOneError' {
-		Mock -CommandName Get-NinjaOneDeviceScriptingOptions -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneDeviceScriptingOptions -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; type = 'SCRIPT'; Name = 'Different script' })
 		}
 
-		{ Invoke-NinjaOneDeviceScript -deviceId 44 -type 'SCRIPT' -scriptId 12 -runAs 'system' } | Should -Throw '*Script with id 12 not found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Invoke-NinjaOneDeviceScript -deviceId 44 -type 'SCRIPT' -scriptId 12 -runAs 'system' } | Pester\Should -Throw '*Script with id 12 not found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'New-NinjaOneInstaller' {
 	BeforeEach {
-		Mock -CommandName Get-NinjaOneOrganisations -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneOrganisations -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 7; name = 'Contoso' })
 		}
-		Mock -CommandName Get-NinjaOneLocations -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneLocations -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 17; name = 'HQ' })
 		}
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ url = 'https://example.test/installer' }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1269,8 +1269,8 @@ Describe 'New-NinjaOneInstaller' {
 	It 'creates an installer from individual parameters and returns the URL' {
 		$result = New-NinjaOneInstaller -organisationId 7 -locationId 17 -installerType 'WINDOWS_MSI' -Confirm:$false
 
-		$result | Should -Be 'https://example.test/installer'
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result | Pester\Should -Be 'https://example.test/installer'
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/generate-installer' -and
 			$Body.organization_id -eq 7 -and
 			$Body.location_id -eq 17 -and
@@ -1288,38 +1288,38 @@ Describe 'New-NinjaOneInstaller' {
 
 		$result = New-NinjaOneInstaller -installer $installer -Confirm:$false
 
-		$result | Should -Be 'https://example.test/installer'
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result | Pester\Should -Be 'https://example.test/installer'
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/generate-installer'
 		}
 	}
 
 	It 'delegates validation failures to New-NinjaOneError when organisation/location do not exist' {
-		Mock -CommandName Get-NinjaOneLocations -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneLocations -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 99; name = 'Other' })
 		}
 
-		{ New-NinjaOneInstaller -organisationId 7 -locationId 17 -installerType 'WINDOWS_MSI' -Confirm:$false } | Should -Throw '*does not exist*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ New-NinjaOneInstaller -organisationId 7 -locationId 17 -installerType 'WINDOWS_MSI' -Confirm:$false } | Pester\Should -Throw '*does not exist*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates POST failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'installer-create-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'installer-create-failed' }
 
-		{ New-NinjaOneInstaller -organisationId 7 -locationId 17 -installerType 'WINDOWS_MSI' -Confirm:$false } | Should -Throw '*installer-create-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ New-NinjaOneInstaller -organisationId 7 -locationId 17 -installerType 'WINDOWS_MSI' -Confirm:$false } | Pester\Should -Throw '*installer-create-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneSoftwarePatches' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; status = 'APPROVED' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1328,7 +1328,7 @@ Describe 'Get-NinjaOneSoftwarePatches' {
 	It 'calls the software patches query endpoint' {
 		$null = Get-NinjaOneSoftwarePatches
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/queries/software-patches'
 		}
 	}
@@ -1336,25 +1336,25 @@ Describe 'Get-NinjaOneSoftwarePatches' {
 	It 'promotes timeStampUnixEpoch to timeStamp in query parameters' {
 		$null = Get-NinjaOneSoftwarePatches -timeStampUnixEpoch 1619712000
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('timeStamp') -and -not $Parameters.ContainsKey('timeStampUnixEpoch')
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneSoftwarePatches } | Should -Throw '*No software patches found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneSoftwarePatches } | Pester\Should -Throw '*No software patches found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'New-NinjaOneCustomField' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ fieldName = 'department'; type = 'TEXT' }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1365,7 +1365,7 @@ Describe 'New-NinjaOneCustomField' {
 
 		$null = New-NinjaOneCustomField -customField $body -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/custom-fields' -and
 			$Body.fieldName -eq 'department' -and
 			$Body.type -eq 'TEXT'
@@ -1377,7 +1377,7 @@ Describe 'New-NinjaOneCustomField' {
 
 		$result = New-NinjaOneCustomField -customField $body -Confirm:$false
 
-		$result.fieldName | Should -Be 'department'
+		$result.fieldName | Pester\Should -Be 'department'
 	}
 
 	It 'does not call POST when -WhatIf is supplied' {
@@ -1385,22 +1385,22 @@ Describe 'New-NinjaOneCustomField' {
 
 		$null = New-NinjaOneCustomField -customField $body -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates request failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'custom-field-create-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'custom-field-create-failed' }
 		$body = @{ fieldName = 'department'; type = 'TEXT' }
 
-		{ New-NinjaOneCustomField -customField $body -Confirm:$false } | Should -Throw '*custom-field-create-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ New-NinjaOneCustomField -customField $body -Confirm:$false } | Pester\Should -Throw '*custom-field-create-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneDeviceMaintenance' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1412,7 +1412,7 @@ Describe 'Set-NinjaOneDeviceMaintenance' {
 
 		$null = Set-NinjaOneDeviceMaintenance -deviceId 81 -disabledFeatures @('ALERTS') -start $start -end $end -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/81/maintenance' -and
 			$Body.disabledFeatures[0] -eq 'ALERTS' -and
 			$Body.start -is [int] -and
@@ -1423,7 +1423,7 @@ Describe 'Set-NinjaOneDeviceMaintenance' {
 	It 'calls PUT with unixStart and unixEnd values' {
 		$null = Set-NinjaOneDeviceMaintenance -deviceId 81 -disabledFeatures @('PATCHING') -unixStart 1704067200 -unixEnd 1704070800 -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/81/maintenance' -and
 			$Body.start -eq 1704067200 -and
 			$Body.end -eq 1704070800
@@ -1431,26 +1431,26 @@ Describe 'Set-NinjaOneDeviceMaintenance' {
 	}
 
 	It 'throws when no end or unixEnd is specified' {
-		{ Set-NinjaOneDeviceMaintenance -deviceId 81 -disabledFeatures @('ALERTS') -start ([datetime]'2024-01-01T00:00:00Z') -Confirm:$false } | Should -Throw '*An end date/time must be specified*'
+		{ Set-NinjaOneDeviceMaintenance -deviceId 81 -disabledFeatures @('ALERTS') -start ([datetime]'2024-01-01T00:00:00Z') -Confirm:$false } | Pester\Should -Throw '*An end date/time must be specified*'
 	}
 
 	It 'delegates PUT failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { throw 'maintenance-update-failed' }
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith { throw 'maintenance-update-failed' }
 
-		{ Set-NinjaOneDeviceMaintenance -deviceId 81 -disabledFeatures @('ALERTS') -unixStart 1704067200 -unixEnd 1704070800 -Confirm:$false } | Should -Throw '*maintenance-update-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Set-NinjaOneDeviceMaintenance -deviceId 81 -disabledFeatures @('ALERTS') -unixStart 1704067200 -unixEnd 1704070800 -Confirm:$false } | Pester\Should -Throw '*maintenance-update-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'New-NinjaOneOrganisation' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ id = 501; name = 'Contoso Ltd' }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1461,11 +1461,11 @@ Describe 'New-NinjaOneOrganisation' {
 
 		$null = New-NinjaOneOrganisation -templateOrganisationId '12' -organisation $body -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organizations' -and
 			$Body.name -eq 'Contoso Ltd'
 		}
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('templateOrganisationId') -and -not $Parameters.ContainsKey('organisation')
 		}
 	}
@@ -1475,27 +1475,27 @@ Describe 'New-NinjaOneOrganisation' {
 
 		$result = New-NinjaOneOrganisation -organisation $body -show -Confirm:$false
 
-		$result.id | Should -Be 501
+		$result.id | Pester\Should -Be 501
 	}
 
 	It 'delegates POST failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'organisation-create-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'organisation-create-failed' }
 		$body = @{ name = 'Contoso Ltd' }
 
-		{ New-NinjaOneOrganisation -organisation $body -Confirm:$false } | Should -Throw '*organisation-create-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ New-NinjaOneOrganisation -organisation $body -Confirm:$false } | Pester\Should -Throw '*organisation-create-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneCustomFields' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; field = 'department' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -1504,7 +1504,7 @@ Describe 'Get-NinjaOneCustomFields' {
 	It 'uses v2/queries/custom-fields for default parameter set' {
 		$null = Get-NinjaOneCustomFields
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/queries/custom-fields'
 		}
 	}
@@ -1512,10 +1512,10 @@ Describe 'Get-NinjaOneCustomFields' {
 	It 'uses v2/queries/custom-fields-detailed when -detailed is supplied in default set' {
 		$null = Get-NinjaOneCustomFields -detailed
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/queries/custom-fields-detailed'
 		}
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('detailed')
 		}
 	}
@@ -1523,7 +1523,7 @@ Describe 'Get-NinjaOneCustomFields' {
 	It 'uses v2/queries/scoped-custom-fields for scoped parameter set' {
 		$null = Get-NinjaOneCustomFields -scopes @('NODE')
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/queries/scoped-custom-fields'
 		}
 	}
@@ -1531,7 +1531,7 @@ Describe 'Get-NinjaOneCustomFields' {
 	It 'uses v2/queries/scoped-custom-fields-detailed when scoped and detailed are supplied' {
 		$null = Get-NinjaOneCustomFields -scopes @('NODE') -detailed
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/queries/scoped-custom-fields-detailed'
 		}
 	}
@@ -1539,22 +1539,22 @@ Describe 'Get-NinjaOneCustomFields' {
 	It 'promotes updatedAfterUnixEpoch to updatedAfter in query parameters' {
 		$null = Get-NinjaOneCustomFields -updatedAfterUnixEpoch 1619712000000
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('updatedAfter') -and -not $Parameters.ContainsKey('updatedAfterUnixEpoch')
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneCustomFields } | Should -Throw '*No custom fields found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneCustomFields } | Pester\Should -Throw '*No custom fields found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneInstanceCapabilities' {
 	BeforeEach {
-		Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith {
 			param($baseUrl, $Force)
 			[pscustomobject]@{
 				BaseUrl = $baseUrl
@@ -1572,18 +1572,27 @@ Describe 'Get-NinjaOneInstanceCapabilities' {
 	It 'returns summary fields when baseUrl is provided' {
 		$result = Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com'
 
-		$result.BaseUrl | Should -Be 'https://fed.ninjarmm.com'
-		$result.AppVersion | Should -Be '1.2.3'
-		$result.PathCount | Should -Be 2
-		Assert-MockCalled -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.BaseUrl | Pester\Should -Be 'https://fed.ninjarmm.com'
+		$result.AppVersion | Pester\Should -Be '1.2.3'
+		$result.PathCount | Pester\Should -Be 2
+		Pester\Should-Invoke -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$baseUrl -eq 'https://fed.ninjarmm.com' -and -not $Force
+		}
+	}
+
+	It 'resolves a named instance to its configured base URL' {
+		$result = Get-NinjaOneInstanceCapabilities -instance 'fed'
+
+		$result.BaseUrl | Pester\Should -Be 'https://fed.ninjarmm.com'
+		Pester\Should-Invoke -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -Times 1 -ParameterFilter {
+			$baseUrl -eq 'https://fed.ninjarmm.com'
 		}
 	}
 
 	It 'passes refresh switch through as Force to internal loader' {
 		$null = Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com' -refresh
 
-		Assert-MockCalled -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$baseUrl -eq 'https://fed.ninjarmm.com' -and $Force
 		}
 	}
@@ -1591,11 +1600,11 @@ Describe 'Get-NinjaOneInstanceCapabilities' {
 	It 'includes paths when includePaths is supplied' {
 		$result = Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com' -includePaths
 
-		$result.Paths.Keys.Count | Should -Be 2
+		$result.Paths.Keys.Count | Pester\Should -Be 2
 	}
 
 	It 'classifies cmdlets as unknown when metadata is absent with includeCmdlets' {
-		Mock -CommandName Get-Module -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-Module -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{
 				ExportedFunctions = @{
 					'Get-FakeOne' = $null
@@ -1603,7 +1612,7 @@ Describe 'Get-NinjaOneInstanceCapabilities' {
 				}
 			}
 		}
-		Mock -CommandName Get-Command -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-Command -ModuleName $ModuleName -MockWith {
 			@(
 				[pscustomobject]@{ Name = 'Get-FakeOne'; ScriptBlock = [scriptblock]::Create('param()') },
 				[pscustomobject]@{ Name = 'Set-FakeTwo'; ScriptBlock = [scriptblock]::Create('param()') }
@@ -1612,30 +1621,30 @@ Describe 'Get-NinjaOneInstanceCapabilities' {
 
 		$result = Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com' -includeCmdlets
 
-		$result.UnknownCmdletCount | Should -Be 2
-		$result.SupportedCmdletCount | Should -Be 0
-		$result.UnsupportedCmdletCount | Should -Be 0
+		$result.UnknownCmdletCount | Pester\Should -Be 2
+		$result.SupportedCmdletCount | Pester\Should -Be 0
+		$result.UnsupportedCmdletCount | Pester\Should -Be 0
 	}
 
 	It 'throws when internal loader returns null capabilities' {
-		Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com' } | Should -Throw '*Unable to retrieve OpenAPI spec*'
+		{ Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com' } | Pester\Should -Throw '*Unable to retrieve OpenAPI spec*'
 	}
 }
 
 Describe 'New-NinjaOneSecureRelation' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[PSCustomObject]@{ id = 42; name = 'TestSecret'; entityType = 'ORGANIZATION'; entityId = 1 }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'posts to the correct resource endpoint' {
 		New-NinjaOneSecureRelation -entityType 'ORGANIZATION' -entityId 1 -secureValueName 'TestSecret'
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/related-items/entity/ORGANIZATION/1/secure'
 		} -Times 1 -Exactly
 	}
@@ -1643,13 +1652,13 @@ Describe 'New-NinjaOneSecureRelation' {
 	It 'returns result when -show is used' {
 		$result = New-NinjaOneSecureRelation -entityType 'ORGANIZATION' -entityId 1 -secureValueName 'TestSecret' -show
 
-		$result.name | Should -Be 'TestSecret'
+		$result.name | Pester\Should -Be 'TestSecret'
 	}
 
 	It 'includes optional body fields when provided' {
 		New-NinjaOneSecureRelation -entityType 'NODE' -entityId 5 -secureValueName 'S' -secureValueURL 'https://example.com' -secureValueUsername 'admin' -secureValuePassword 'pass' -secureValueNotes 'notes'
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/related-items/entity/NODE/5/secure' -and
 			$Body.url -eq 'https://example.com' -and
 			$Body.username -eq 'admin' -and
@@ -1660,30 +1669,30 @@ Describe 'New-NinjaOneSecureRelation' {
 	It 'skips POST when WhatIf is used' {
 		New-NinjaOneSecureRelation -entityType 'ORGANIZATION' -entityId 1 -secureValueName 'S' -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
 
-		{ New-NinjaOneSecureRelation -entityType 'ORGANIZATION' -entityId 1 -secureValueName 'S' } | Should -Throw
+		{ New-NinjaOneSecureRelation -entityType 'ORGANIZATION' -entityId 1 -secureValueName 'S' } | Pester\Should -Throw
 	}
 }
 
 Describe 'New-NinjaOneOrganisationDocument' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[PSCustomObject]@{ id = 10; documentName = 'Doc1'; organizationId = 3 }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'posts to the correct resource endpoint' {
 		$doc = [PSCustomObject]@{ documentName = 'Doc1'; fields = @{} }
 		New-NinjaOneOrganisationDocument -organisationId '3' -documentTemplateId '7' -organisationDocument $doc
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/organization/3/template/7/document'
 		} -Times 1 -Exactly
 	}
@@ -1692,38 +1701,38 @@ Describe 'New-NinjaOneOrganisationDocument' {
 		$doc = [PSCustomObject]@{ documentName = 'Doc1'; fields = @{} }
 		$result = New-NinjaOneOrganisationDocument -organisationId '3' -documentTemplateId '7' -organisationDocument $doc -show
 
-		$result.documentName | Should -Be 'Doc1'
+		$result.documentName | Pester\Should -Be 'Doc1'
 	}
 
 	It 'skips POST when WhatIf is used' {
 		$doc = [PSCustomObject]@{ documentName = 'Doc1'; fields = @{} }
 		New-NinjaOneOrganisationDocument -organisationId '3' -documentTemplateId '7' -organisationDocument $doc -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
 		$doc = [PSCustomObject]@{ documentName = 'Doc1'; fields = @{} }
 
-		{ New-NinjaOneOrganisationDocument -organisationId '3' -documentTemplateId '7' -organisationDocument $doc } | Should -Throw
+		{ New-NinjaOneOrganisationDocument -organisationId '3' -documentTemplateId '7' -organisationDocument $doc } | Pester\Should -Throw
 	}
 }
 
 Describe 'New-NinjaOneOrganisationDocuments' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			@([PSCustomObject]@{ id = 11; organizationId = 4 }, [PSCustomObject]@{ id = 12; organizationId = 5 })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'posts to the correct resource endpoint' {
 		$docs = @([PSCustomObject]@{ documentName = 'D1'; organizationId = 4 })
 		New-NinjaOneOrganisationDocuments -organisationDocuments $docs
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/organization/documents'
 		} -Times 1 -Exactly
 	}
@@ -1732,38 +1741,38 @@ Describe 'New-NinjaOneOrganisationDocuments' {
 		$docs = @([PSCustomObject]@{ documentName = 'D1'; organizationId = 4 })
 		$result = New-NinjaOneOrganisationDocuments -organisationDocuments $docs -show
 
-		$result | Should -Not -BeNullOrEmpty
+		$result | Pester\Should -Not -BeNullOrEmpty
 	}
 
 	It 'skips POST when WhatIf is used' {
 		$docs = @([PSCustomObject]@{ documentName = 'D1'; organizationId = 4 })
 		New-NinjaOneOrganisationDocuments -organisationDocuments $docs -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
 		$docs = @([PSCustomObject]@{ documentName = 'D1'; organizationId = 4 })
 
-		{ New-NinjaOneOrganisationDocuments -organisationDocuments $docs } | Should -Throw
+		{ New-NinjaOneOrganisationDocuments -organisationDocuments $docs } | Pester\Should -Throw
 	}
 }
 
 Describe 'New-NinjaOnePolicy' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[PSCustomObject]@{ id = 20; name = 'TestPolicy'; nodeClass = 'WINDOWS_SERVER' }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'posts to the correct resource endpoint' {
 		$policy = [PSCustomObject]@{ name = 'TestPolicy'; nodeClass = 'WINDOWS_SERVER'; enabled = $true }
 		New-NinjaOnePolicy -mode 'NEW' -policy $policy
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/policies'
 		} -Times 1 -Exactly
 	}
@@ -1772,19 +1781,19 @@ Describe 'New-NinjaOnePolicy' {
 		$policy = [PSCustomObject]@{ name = 'TestPolicy'; nodeClass = 'WINDOWS_SERVER'; enabled = $true }
 		$result = New-NinjaOnePolicy -mode 'NEW' -policy $policy -show
 
-		$result.name | Should -Be 'TestPolicy'
+		$result.name | Pester\Should -Be 'TestPolicy'
 	}
 
 	It 'throws in begin block when CHILD mode has no parentPolicyId' {
 		$policy = [PSCustomObject]@{ name = 'ChildPolicy'; nodeClass = 'WINDOWS_SERVER' }
 
-		{ New-NinjaOnePolicy -mode 'CHILD' -policy $policy } | Should -Throw '*parent policy id*'
+		{ New-NinjaOnePolicy -mode 'CHILD' -policy $policy } | Pester\Should -Throw '*parent policy id*'
 	}
 
 	It 'throws in begin block when COPY mode has no templatePolicyId' {
 		$policy = [PSCustomObject]@{ name = 'CopyPolicy'; nodeClass = 'WINDOWS_SERVER' }
 
-		{ New-NinjaOnePolicy -mode 'COPY' -policy $policy } | Should -Throw '*template policy id*'
+		{ New-NinjaOnePolicy -mode 'COPY' -policy $policy } | Pester\Should -Throw '*template policy id*'
 	}
 
 	It 'allows COPY mode when templatePolicyId is provided' {
@@ -1792,37 +1801,37 @@ Describe 'New-NinjaOnePolicy' {
 
 		New-NinjaOnePolicy -mode 'COPY' -policy $policy -templatePolicyId 10
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -Exactly
 	}
 
 	It 'skips POST when WhatIf is used' {
 		$policy = [PSCustomObject]@{ name = 'TestPolicy'; nodeClass = 'WINDOWS_SERVER'; enabled = $true }
 		New-NinjaOnePolicy -mode 'NEW' -policy $policy -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
 		$policy = [PSCustomObject]@{ name = 'TestPolicy'; nodeClass = 'WINDOWS_SERVER'; enabled = $true }
 
-		{ New-NinjaOnePolicy -mode 'NEW' -policy $policy } | Should -Throw
+		{ New-NinjaOnePolicy -mode 'NEW' -policy $policy } | Pester\Should -Throw
 	}
 }
 
 Describe 'Get-NinjaOneAntiVirusStatus' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([PSCustomObject]@{ deviceId = 1; productName = 'Defender'; productState = 'ON' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'calls the correct endpoint' {
 		Get-NinjaOneAntiVirusStatus
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/queries/antivirus-status'
 		} -Times 1 -Exactly
 	}
@@ -1830,42 +1839,42 @@ Describe 'Get-NinjaOneAntiVirusStatus' {
 	It 'returns results' {
 		$result = Get-NinjaOneAntiVirusStatus
 
-		$result | Should -Not -BeNullOrEmpty
-		$result[0].productName | Should -Be 'Defender'
+		$result | Pester\Should -Not -BeNullOrEmpty
+		$result[0].productName | Pester\Should -Be 'Defender'
 	}
 
 	It 'applies deviceFilter parameter' {
 		Get-NinjaOneAntiVirusStatus -deviceFilter 'org = 1'
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -Exactly
 	}
 
 	It 'converts timeStampUnixEpoch to timeStamp' {
 		Get-NinjaOneAntiVirusStatus -timeStampUnixEpoch 1619712000
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -Exactly
 	}
 
 	It 'throws when no results returned' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneAntiVirusStatus } | Should -Throw
+		{ Get-NinjaOneAntiVirusStatus } | Pester\Should -Throw
 	}
 }
 
 Describe 'New-NinjaOneWindowsEventPolicyCondition' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[PSCustomObject]@{ id = 99; displayName = 'TestCondition'; policyId = 15 }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'posts to the correct resource endpoint' {
 		$condition = [PSCustomObject]@{ displayName = 'TestCondition'; enabled = $true }
 		New-NinjaOneWindowsEventPolicyCondition -policyId 15 -windowsEventPolicyCondition $condition
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/policies/15/condition/windows-event'
 		} -Times 1 -Exactly
 	}
@@ -1874,29 +1883,29 @@ Describe 'New-NinjaOneWindowsEventPolicyCondition' {
 		$condition = [PSCustomObject]@{ displayName = 'TestCondition'; enabled = $true }
 		$result = New-NinjaOneWindowsEventPolicyCondition -policyId 15 -windowsEventPolicyCondition $condition -show
 
-		$result.displayName | Should -Be 'TestCondition'
+		$result.displayName | Pester\Should -Be 'TestCondition'
 	}
 
 	It 'skips POST when WhatIf is used' {
 		$condition = [PSCustomObject]@{ displayName = 'TestCondition'; enabled = $true }
 		New-NinjaOneWindowsEventPolicyCondition -policyId 15 -windowsEventPolicyCondition $condition -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces errors via New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API error' }
 		$condition = [PSCustomObject]@{ displayName = 'TestCondition'; enabled = $true }
 
-		{ New-NinjaOneWindowsEventPolicyCondition -policyId 15 -windowsEventPolicyCondition $condition } | Should -Throw
+		{ New-NinjaOneWindowsEventPolicyCondition -policyId 15 -windowsEventPolicyCondition $condition } | Pester\Should -Throw
 	}
 }
 
 Describe 'Reset-NinjaOneAlert' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'uses POST reset endpoint when activityData is provided' {
@@ -1904,7 +1913,7 @@ Describe 'Reset-NinjaOneAlert' {
 
 		Reset-NinjaOneAlert -uid '15' -activityData $activityData
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/alert/15/reset' -and
 			$Body.reason -eq 'manual reset'
 		} -Times 1 -Exactly
@@ -1913,7 +1922,7 @@ Describe 'Reset-NinjaOneAlert' {
 	It 'uses DELETE endpoint when activityData is not provided' {
 		Reset-NinjaOneAlert -uid '20'
 
-		Should -Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/alert/20'
 		} -Times 1 -Exactly
 	}
@@ -1923,35 +1932,35 @@ Describe 'Reset-NinjaOneAlert' {
 
 		Reset-NinjaOneAlert -uid '30' -activityData $activityData -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'skips DELETE when WhatIf is used' {
 		Reset-NinjaOneAlert -uid '31' -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces API errors through New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { throw 'API failure' }
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { throw 'API failure' }
 
-		{ Reset-NinjaOneAlert -uid '99' } | Should -Throw
+		{ Reset-NinjaOneAlert -uid '99' } | Pester\Should -Throw
 	}
 }
 
 Describe 'Get-NinjaOneTicketLogEntries' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([PSCustomObject]@{ id = 1; type = 'DESCRIPTION'; message = 'entry' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'calls the expected ticket log endpoint' {
 		Get-NinjaOneTicketLogEntries -ticketId '7'
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/ticketing/ticket/7/log-entry'
 		} -Times 1 -Exactly
 	}
@@ -1959,7 +1968,7 @@ Describe 'Get-NinjaOneTicketLogEntries' {
 	It 'passes ParseDateTime when switch is set' {
 		Get-NinjaOneTicketLogEntries -ticketId '8' -parseDateTime
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/ticketing/ticket/8/log-entry' -and
 			$ParseDateTime
 		} -Times 1 -Exactly
@@ -1968,71 +1977,71 @@ Describe 'Get-NinjaOneTicketLogEntries' {
 	It 'returns ticket log results' {
 		$result = Get-NinjaOneTicketLogEntries -ticketId '9'
 
-		$result | Should -Not -BeNullOrEmpty
-		$result[0].type | Should -Be 'DESCRIPTION'
+		$result | Pester\Should -Not -BeNullOrEmpty
+		$result[0].type | Pester\Should -Be 'DESCRIPTION'
 	}
 
 	It 'throws specific message when no results and type is provided' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTicketLogEntries -ticketId '10' -type 'DESCRIPTION' } | Should -Throw '*with type DESCRIPTION*'
+		{ Get-NinjaOneTicketLogEntries -ticketId '10' -type 'DESCRIPTION' } | Pester\Should -Throw '*with type DESCRIPTION*'
 	}
 
 	It 'throws specific message when no results and type is not provided' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTicketLogEntries -ticketId '11' } | Should -Throw '*No ticket log entries found for ticket 11*'
+		{ Get-NinjaOneTicketLogEntries -ticketId '11' } | Pester\Should -Throw '*No ticket log entries found for ticket 11*'
 	}
 }
 
 Describe 'New-NinjaOneDocumentTemplateFieldObject' {
 	It 'creates a Field object with required properties and type name' {
-		$result = New-NinjaOneDocumentTemplateFieldObject -label 'Field A' -Name 'fieldA' -type 'TEXT'
+		$result = New-NinjaOneDocumentTemplateFieldObject -label 'Field A' -name 'fieldA' -type 'TEXT'
 
-		$result.fieldLabel | Should -Be 'Field A'
-		$result.fieldName | Should -Be 'fieldA'
-		$result.fieldType | Should -Be 'TEXT'
-		$result.PSObject.TypeNames[0] | Should -Be 'DocumentTemplateField'
+		$result.fieldLabel | Pester\Should -Be 'Field A'
+		$result.fieldName | Pester\Should -Be 'fieldA'
+		$result.fieldType | Pester\Should -Be 'TEXT'
+		$result.PSObject.TypeNames[0] | Pester\Should -Be 'DocumentTemplateField'
 	}
 
 	It 'adds optional Field properties when specified' {
 		$options = @('Option1', 'Option2')
-		$result = New-NinjaOneDocumentTemplateFieldObject -label 'Field B' -Name 'fieldB' -description 'desc' -type 'DROPDOWN' -defaultValue 'Option1' -options $options
+		$result = New-NinjaOneDocumentTemplateFieldObject -label 'Field B' -name 'fieldB' -description 'desc' -type 'DROPDOWN' -defaultValue 'Option1' -options $options
 
-		$result.fieldDescription | Should -Be 'desc'
-		$result.fieldDefaultValue | Should -Be 'Option1'
-		$result.fieldContent.Count | Should -Be 2
+		$result.fieldDescription | Pester\Should -Be 'desc'
+		$result.fieldDefaultValue | Pester\Should -Be 'Option1'
+		$result.fieldContent.Count | Pester\Should -Be 2
 	}
 
 	It 'creates a UI element object with required properties and type name' {
 		$result = New-NinjaOneDocumentTemplateFieldObject -elementName 'Heading' -elementType 'TITLE' -elementValue 'Welcome'
 
-		$result.uiElementName | Should -Be 'Heading'
-		$result.uiElementType | Should -Be 'TITLE'
-		$result.uiElementValue | Should -Be 'Welcome'
-		$result.PSObject.TypeNames[0] | Should -Be 'DocumentTemplateField'
+		$result.uiElementName | Pester\Should -Be 'Heading'
+		$result.uiElementType | Pester\Should -Be 'TITLE'
+		$result.uiElementValue | Pester\Should -Be 'Welcome'
+		$result.PSObject.TypeNames[0] | Pester\Should -Be 'DocumentTemplateField'
 	}
 
 	It 'omits UI element value when not provided' {
 		$result = New-NinjaOneDocumentTemplateFieldObject -elementName 'Rule' -elementType 'SEPARATOR'
 
-		$result.PSObject.Properties.Name -contains 'uiElementValue' | Should -BeFalse
+		$result.PSObject.Properties.Name -contains 'uiElementValue' | Pester\Should -BeFalse
 	}
 }
 
 Describe 'Get-NinjaOneTicketForms' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([PSCustomObject]@{ id = 1; name = 'Default Form' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'calls list endpoint when ticketFormId is not provided' {
 		Get-NinjaOneTicketForms
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq '/v2/ticketing/ticket-form'
 		} -Times 1 -Exactly
 	}
@@ -2040,7 +2049,7 @@ Describe 'Get-NinjaOneTicketForms' {
 	It 'calls single-item endpoint when ticketFormId is provided' {
 		Get-NinjaOneTicketForms -ticketFormId 8
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq '/v2/ticketing/ticket-form/8'
 		} -Times 1 -Exactly
 	}
@@ -2048,29 +2057,29 @@ Describe 'Get-NinjaOneTicketForms' {
 	It 'returns ticket forms' {
 		$result = Get-NinjaOneTicketForms
 
-		$result[0].name | Should -Be 'Default Form'
+		$result[0].name | Pester\Should -Be 'Default Form'
 	}
 
 	It 'throws when no ticket forms are found' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTicketForms } | Should -Throw '*No ticket forms found*'
+		{ Get-NinjaOneTicketForms } | Pester\Should -Throw '*No ticket forms found*'
 	}
 }
 
 Describe 'Get-NinjaOneTicketingContacts' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith { [System.Web.HttpUtility]::ParseQueryString([String]::Empty) }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([PSCustomObject]@{ id = 1; name = 'Contact 1' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'calls the expected ticketing contacts endpoint' {
 		Get-NinjaOneTicketingContacts
 
-		Should -Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/ticketing/contact/contacts'
 		} -Times 1 -Exactly
 	}
@@ -2078,29 +2087,29 @@ Describe 'Get-NinjaOneTicketingContacts' {
 	It 'returns contacts when present' {
 		$result = Get-NinjaOneTicketingContacts
 
-		$result | Should -Not -BeNullOrEmpty
-		$result[0].name | Should -Be 'Contact 1'
+		$result | Pester\Should -Not -BeNullOrEmpty
+		$result[0].name | Pester\Should -Be 'Contact 1'
 	}
 
 	It 'throws when no contacts are found' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTicketingContacts } | Should -Throw '*No ticketing contacts found*'
+		{ Get-NinjaOneTicketingContacts } | Pester\Should -Throw '*No ticketing contacts found*'
 	}
 }
 
 Describe 'New-NinjaOneEntityRelation' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			[PSCustomObject]@{ id = 100; relEntityType = 'NODE'; relEntityId = 50 }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'posts to the expected relation endpoint' {
 		New-NinjaOneEntityRelation -entityType 'ORGANIZATION' -entityId 1 -relatedEntityType 'NODE' -relatedEntityId 50
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/related-items/entity/ORGANIZATION/1/relation' -and
 			$Body.relEntityType -eq 'NODE' -and
 			$Body.relEntityId -eq 50
@@ -2110,35 +2119,35 @@ Describe 'New-NinjaOneEntityRelation' {
 	It 'returns result when -show is used' {
 		$result = New-NinjaOneEntityRelation -entityType 'ORGANIZATION' -entityId 1 -relatedEntityType 'NODE' -relatedEntityId 50 -show
 
-		$result.relEntityId | Should -Be 50
+		$result.relEntityId | Pester\Should -Be 50
 	}
 
 	It 'skips POST when WhatIf is used' {
 		New-NinjaOneEntityRelation -entityType 'ORGANIZATION' -entityId 1 -relatedEntityType 'NODE' -relatedEntityId 50 -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces API errors through New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API failure' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API failure' }
 
-		{ New-NinjaOneEntityRelation -entityType 'ORGANIZATION' -entityId 1 -relatedEntityType 'NODE' -relatedEntityId 50 } | Should -Throw
+		{ New-NinjaOneEntityRelation -entityType 'ORGANIZATION' -entityId 1 -relatedEntityType 'NODE' -relatedEntityId 50 } | Pester\Should -Throw
 	}
 }
 
 Describe 'New-NinjaOneEntityRelations' {
 	BeforeAll {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			@([PSCustomObject]@{ relEntityType = 'NODE'; relEntityId = 51 })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith { param($ErrorRecord); throw $ErrorRecord.Exception }
 	}
 
 	It 'posts relation array to the expected endpoint' {
 		$relations = @([PSCustomObject]@{ relEntityType = 'NODE'; relEntityId = 51 })
 		New-NinjaOneEntityRelations -entityType 'ORGANIZATION' -entityId 1 -entityRelations $relations
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -ParameterFilter {
 			$Resource -eq 'v2/related-items/entity/ORGANIZATION/1/relations' -and
 			$Body[0].relEntityId -eq 51
 		} -Times 1 -Exactly
@@ -2148,21 +2157,21 @@ Describe 'New-NinjaOneEntityRelations' {
 		$relations = @([PSCustomObject]@{ relEntityType = 'NODE'; relEntityId = 51 })
 		$result = New-NinjaOneEntityRelations -entityType 'ORGANIZATION' -entityId 1 -entityRelations $relations -show
 
-		$result[0].relEntityId | Should -Be 51
+		$result[0].relEntityId | Pester\Should -Be 51
 	}
 
 	It 'skips POST when WhatIf is used' {
 		$relations = @([PSCustomObject]@{ relEntityType = 'NODE'; relEntityId = 51 })
 		New-NinjaOneEntityRelations -entityType 'ORGANIZATION' -entityId 1 -entityRelations $relations -WhatIf
 
-		Should -Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0 -Exactly
 	}
 
 	It 'surfaces API errors through New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API failure' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'API failure' }
 		$relations = @([PSCustomObject]@{ relEntityType = 'NODE'; relEntityId = 51 })
 
-		{ New-NinjaOneEntityRelations -entityType 'ORGANIZATION' -entityId 1 -entityRelations $relations } | Should -Throw
+		{ New-NinjaOneEntityRelations -entityType 'ORGANIZATION' -entityId 1 -entityRelations $relations } | Pester\Should -Throw
 	}
 }
 
@@ -2202,35 +2211,35 @@ Describe 'Public function definitions' {
 
 Describe 'Public Query Functions - Existence Tests' {
 	It 'Get-NinjaOneCustomFields should exist' {
-		Get-Command -Name Get-NinjaOneCustomFields -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+		Get-Command -Name Get-NinjaOneCustomFields -ErrorAction SilentlyContinue | Pester\Should -Not -BeNullOrEmpty
 	}
 
 	It 'Get-NinjaOneAntivirusStatus should exist' {
-		Get-Command -Name Get-NinjaOneAntivirusStatus -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+		Get-Command -Name Get-NinjaOneAntivirusStatus -ErrorAction SilentlyContinue | Pester\Should -Not -BeNullOrEmpty
 	}
 
 	It 'Get-NinjaOneAntivirusThreats should exist' {
-		Get-Command -Name Get-NinjaOneAntivirusThreats -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+		Get-Command -Name Get-NinjaOneAntivirusThreats -ErrorAction SilentlyContinue | Pester\Should -Not -BeNullOrEmpty
 	}
 
 	It 'Get-NinjaOneDeviceBackupUsage should exist' {
-		Get-Command -Name Get-NinjaOneDeviceBackupUsage -ErrorAction SilentlyContinue | Should -Not -BeNullOrEmpty
+		Get-Command -Name Get-NinjaOneDeviceBackupUsage -ErrorAction SilentlyContinue | Pester\Should -Not -BeNullOrEmpty
 	}
 }
 
 Describe 'Public Query Functions - Contract Matrix' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@(
 				[pscustomobject]@{
 					id = 1
 				}
 			)
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -2431,9 +2440,9 @@ Describe 'Public Query Functions - Contract Matrix' {
 	It 'returns data and calls expected resource for <Name>' -ForEach $ContractCases {
 		$result = & $PSItem.InvokeSuccess
 
-		@($result).Count | Should -Be 1
-		$result[0].id | Should -Be 1
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		@($result).Count | Pester\Should -Be 1
+		$result[0].id | Pester\Should -Be 1
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq $PSItem.ExpectedResource
 		}
 	}
@@ -2441,7 +2450,7 @@ Describe 'Public Query Functions - Contract Matrix' {
 	It 'builds expected query keys for <Name>' -ForEach $ContractCases {
 		$null = & $PSItem.InvokeQuery
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$HasExpected = $Parameters.ContainsKey($PSItem.ExpectedQueryKey)
 			if ([string]::IsNullOrWhiteSpace($PSItem.ExpectedRemovedQueryKey)) {
 				return $HasExpected
@@ -2452,28 +2461,28 @@ Describe 'Public Query Functions - Contract Matrix' {
 	}
 
 	It 'delegates no-result errors for <Name>' -ForEach $ContractCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			$null
 		}
 
-		{ & $PSItem.InvokeSuccess } | Should -Throw ('*{0}*' -f $PSItem.ExpectedError)
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.InvokeSuccess } | Pester\Should -Throw ('*{0}*' -f $PSItem.ExpectedError)
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates upstream API exceptions for <Name>' -ForEach $ContractCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			throw [System.InvalidOperationException]::new('upstream-api-failure')
 		}
 
-		{ & $PSItem.InvokeSuccess } | Should -Throw '*upstream-api-failure*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.InvokeSuccess } | Pester\Should -Throw '*upstream-api-failure*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'New-NinjaOneTicketComment' {
 	It 'wraps a simple comment object in a multipart envelope' {
 		$module = Get-Module -Name 'NinjaOne' | Select-Object -First 1
-		& $module {
+		Pester\InModuleScope $ModuleName {
 			$script:CapturedTicketCommentRequest = $null
 			function New-NinjaOnePOSTRequest {
 				<#
@@ -2496,20 +2505,20 @@ Describe 'New-NinjaOneTicketComment' {
 
 			$result = New-NinjaOneTicketComment -ticketId 1003 -comment @{ public = $true; body = 'Test Comment via API' } -Confirm:$false -show
 
-			$script:CapturedTicketCommentRequest | Should -Not -BeNullOrEmpty
-			$script:CapturedTicketCommentRequest.Resource | Should -Be 'v2/ticketing/ticket/1003/comment'
-			$script:CapturedTicketCommentRequest.UseMultipart | Should -Be $true
-			$script:CapturedTicketCommentRequest.Body | Should -BeOfType ([System.Collections.IDictionary])
-			$script:CapturedTicketCommentRequest.Body.Contains('comment') | Should -Be $true
-			$script:CapturedTicketCommentRequest.Body.comment.public | Should -Be $true
-			$script:CapturedTicketCommentRequest.Body.comment.body | Should -Be 'Test Comment via API'
-			$result.Body.comment.body | Should -Be 'Test Comment via API'
+			$script:CapturedTicketCommentRequest | Pester\Should -Not -BeNullOrEmpty
+			$script:CapturedTicketCommentRequest.Resource | Pester\Should -Be 'v2/ticketing/ticket/1003/comment'
+			$script:CapturedTicketCommentRequest.UseMultipart | Pester\Should -Be $true
+			$script:CapturedTicketCommentRequest.Body | Pester\Should -BeOfType ([System.Collections.IDictionary])
+			$script:CapturedTicketCommentRequest.Body.Contains('comment') | Pester\Should -Be $true
+			$script:CapturedTicketCommentRequest.Body.comment.public | Pester\Should -Be $true
+			$script:CapturedTicketCommentRequest.Body.comment.body | Pester\Should -Be 'Test Comment via API'
+			$result.Body.comment.body | Pester\Should -Be 'Test Comment via API'
 		}
 	}
 
 	It 'preserves an explicit multipart envelope' {
 		$module = Get-Module -Name 'NinjaOne' | Select-Object -First 1
-		& $module {
+		Pester\InModuleScope $ModuleName {
 			$script:CapturedTicketCommentRequest = $null
 			$body = @{
 				comment = @{
@@ -2539,14 +2548,14 @@ Describe 'New-NinjaOneTicketComment' {
 
 			$result = New-NinjaOneTicketComment -ticketId 1003 -comment $body -Confirm:$false -show
 
-			$script:CapturedTicketCommentRequest | Should -Not -BeNullOrEmpty
-			$script:CapturedTicketCommentRequest.Resource | Should -Be 'v2/ticketing/ticket/1003/comment'
-			$script:CapturedTicketCommentRequest.UseMultipart | Should -Be $true
-			$script:CapturedTicketCommentRequest.Body | Should -BeOfType ([System.Collections.IDictionary])
-			$script:CapturedTicketCommentRequest.Body.Contains('comment') | Should -Be $true
-			$script:CapturedTicketCommentRequest.Body.Contains('files') | Should -Be $true
-			$script:CapturedTicketCommentRequest.Body.files[0] | Should -Be 'C:\Temp\example.txt'
-			$result.Body.files[0] | Should -Be 'C:\Temp\example.txt'
+			$script:CapturedTicketCommentRequest | Pester\Should -Not -BeNullOrEmpty
+			$script:CapturedTicketCommentRequest.Resource | Pester\Should -Be 'v2/ticketing/ticket/1003/comment'
+			$script:CapturedTicketCommentRequest.UseMultipart | Pester\Should -Be $true
+			$script:CapturedTicketCommentRequest.Body | Pester\Should -BeOfType ([System.Collections.IDictionary])
+			$script:CapturedTicketCommentRequest.Body.Contains('comment') | Pester\Should -Be $true
+			$script:CapturedTicketCommentRequest.Body.Contains('files') | Pester\Should -Be $true
+			$script:CapturedTicketCommentRequest.Body.files[0] | Pester\Should -Be 'C:\Temp\example.txt'
+			$result.Body.files[0] | Pester\Should -Be 'C:\Temp\example.txt'
 		}
 	}
 }
@@ -2554,7 +2563,7 @@ Describe 'New-NinjaOneTicketComment' {
 Describe 'Get-NinjaOneActivities' {
 	It 'does not emit boolean output when using -deviceId with -type' {
 		$module = Get-Module -Name 'NinjaOne' | Select-Object -First 1
-		& $module {
+		Pester\InModuleScope $ModuleName {
 			function New-NinjaOneGETRequest {
 				<#
 				.SYNOPSIS
@@ -2581,16 +2590,16 @@ Describe 'Get-NinjaOneActivities' {
 
 			$result = @(Get-NinjaOneActivities -deviceId 123 -type 'Action')
 
-			$result.Count | Should -Be 1
-			($result | Where-Object { $_ -is [bool] }).Count | Should -Be 0
-			$result[0].lastActivityId | Should -Be 42
-			$result[0].activities[0].type | Should -Be 'Action'
+			$result.Count | Pester\Should -Be 1
+			($result | Where-Object { $_ -is [bool] }).Count | Pester\Should -Be 0
+			$result[0].lastActivityId | Pester\Should -Be 42
+			$result[0].activities[0].type | Pester\Should -Be 'Action'
 		}
 	}
 
 	It 'does not emit boolean output when using -activityType' {
 		$module = Get-Module -Name 'NinjaOne' | Select-Object -First 1
-		& $module {
+		Pester\InModuleScope $ModuleName {
 			function New-NinjaOneGETRequest {
 				<#
 				.SYNOPSIS
@@ -2617,20 +2626,20 @@ Describe 'Get-NinjaOneActivities' {
 
 			$result = @(Get-NinjaOneActivities -activityType 'Action')
 
-			$result.Count | Should -Be 1
-			($result | Where-Object { $_ -is [bool] }).Count | Should -Be 0
-			$result[0].lastActivityId | Should -Be 7
-			$result[0].activities[0].id | Should -Be 7
+			$result.Count | Pester\Should -Be 1
+			($result | Where-Object { $_ -is [bool] }).Count | Pester\Should -Be 0
+			$result[0].lastActivityId | Pester\Should -Be 7
+			$result[0].activities[0].id | Pester\Should -Be 7
 		}
 	}
 }
 
 Describe 'Get-NinjaOneUsers' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			@{}
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@(
 				[pscustomobject]@{
 					id = 1
@@ -2638,7 +2647,7 @@ Describe 'Get-NinjaOneUsers' {
 				}
 			)
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -2646,50 +2655,50 @@ Describe 'Get-NinjaOneUsers' {
 
 	It 'uses the default users endpoint when organisationId is not supplied' {
 		$module = Get-Module -Name $ModuleName
-		$result = & $module {
+		$result = Pester\InModuleScope $ModuleName {
 			Get-NinjaOneUsers -includeRoles
 		}
 
-		@($result).Count | Should -Be 1
-		$result[0].id | Should -Be 1
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter { $Resource -eq 'v2/users' }
+		@($result).Count | Pester\Should -Be 1
+		$result[0].id | Pester\Should -Be 1
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter { $Resource -eq 'v2/users' }
 	}
 
 	It 'uses the organisation users endpoint when organisationId is supplied' {
 		$module = Get-Module -Name $ModuleName
-		$result = & $module {
+		$result = Pester\InModuleScope $ModuleName {
 			Get-NinjaOneUsers -organisationId 7 -userType END_USER
 		}
 
-		@($result).Count | Should -Be 1
-		$result[0].name | Should -Be 'Test User'
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter { $Resource -eq 'v2/organization/7/end-users' }
+		@($result).Count | Pester\Should -Be 1
+		$result[0].name | Pester\Should -Be 'Test User'
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter { $Resource -eq 'v2/organization/7/end-users' }
 	}
 
 	It 'delegates no-result default-path failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			$null
 		}
 
 		$module = Get-Module -Name $ModuleName
-		& $module {
-			{ Get-NinjaOneUsers } | Should -Throw '*No users found*'
+		Pester\InModuleScope $ModuleName {
+			{ Get-NinjaOneUsers } | Pester\Should -Throw '*No users found*'
 		}
 
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates no-result organisation-path failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			$null
 		}
 
 		$module = Get-Module -Name $ModuleName
-		& $module {
-			{ Get-NinjaOneUsers -organisationId 12 -userType END_USER } | Should -Throw '*No users found for organisation 12*'
+		Pester\InModuleScope $ModuleName {
+			{ Get-NinjaOneUsers -organisationId 12 -userType END_USER } | Pester\Should -Throw '*No users found for organisation 12*'
 		}
 
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
@@ -2728,15 +2737,15 @@ Describe 'Get-NinjaOneUsers' {
 
 Describe 'Get-NinjaOneAlerts' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@(
 				[pscustomobject]@{ uid = 'alert-1'; message = 'CPU high' }
 			)
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -2745,8 +2754,8 @@ Describe 'Get-NinjaOneAlerts' {
 	It 'uses the global alerts endpoint when deviceId is not supplied' {
 		$result = Get-NinjaOneAlerts
 
-		@($result).Count | Should -Be 1
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		@($result).Count | Pester\Should -Be 1
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/alerts'
 		}
 	}
@@ -2754,8 +2763,8 @@ Describe 'Get-NinjaOneAlerts' {
 	It 'uses the device alerts endpoint when deviceId is supplied' {
 		$result = Get-NinjaOneAlerts -deviceId 42
 
-		@($result).Count | Should -Be 1
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		@($result).Count | Pester\Should -Be 1
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/42/alerts'
 		}
 	}
@@ -2763,7 +2772,7 @@ Describe 'Get-NinjaOneAlerts' {
 	It 'passes sourceType as a query string parameter' {
 		Get-NinjaOneAlerts -sourceType 'CONDITION_CUSTOM_FIELD'
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('sourceType')
 		}
 	}
@@ -2771,53 +2780,53 @@ Describe 'Get-NinjaOneAlerts' {
 	It 'passes parseDateTime through to the GET request' {
 		Get-NinjaOneAlerts -parseDateTime
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$ParseDateTime -eq $true
 		}
 	}
 
 	It 'throws no-result global errors when the API returns null' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneAlerts } | Should -Throw '*No alerts found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneAlerts } | Pester\Should -Throw '*No alerts found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'throws no-result device errors when the API returns null' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneAlerts -deviceId 7 } | Should -Throw '*No alerts found for device 7*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneAlerts -deviceId 7 } | Pester\Should -Throw '*No alerts found for device 7*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates upstream global request failures to New-NinjaOneError without masking' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'Not found' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'Not found' }
 
-		{ Get-NinjaOneAlerts } | Should -Throw '*Not found*'
+		{ Get-NinjaOneAlerts } | Pester\Should -Throw '*Not found*'
 
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates upstream device request failures to New-NinjaOneError without masking' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'Not found' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'Not found' }
 
-		{ Get-NinjaOneAlerts -deviceId 7 } | Should -Throw '*Not found*'
+		{ Get-NinjaOneAlerts -deviceId 7 } | Pester\Should -Throw '*Not found*'
 
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneJobs' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@(
 				[pscustomobject]@{ id = 1001; type = 'SOFTWARE_PATCH_MANAGEMENT'; status = 'COMPLETED' }
 			)
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -2826,8 +2835,8 @@ Describe 'Get-NinjaOneJobs' {
 	It 'uses the global jobs endpoint when deviceId is not supplied' {
 		$result = Get-NinjaOneJobs
 
-		@($result).Count | Should -Be 1
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		@($result).Count | Pester\Should -Be 1
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/jobs'
 		}
 	}
@@ -2835,8 +2844,8 @@ Describe 'Get-NinjaOneJobs' {
 	It 'uses the device jobs endpoint when deviceId is supplied' {
 		$result = Get-NinjaOneJobs -deviceId 5
 
-		@($result).Count | Should -Be 1
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		@($result).Count | Pester\Should -Be 1
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/5/jobs'
 		}
 	}
@@ -2844,7 +2853,7 @@ Describe 'Get-NinjaOneJobs' {
 	It 'passes jobType as a query string parameter' {
 		Get-NinjaOneJobs -jobType 'SOFTWARE_PATCH_MANAGEMENT'
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('jobType')
 		}
 	}
@@ -2852,39 +2861,39 @@ Describe 'Get-NinjaOneJobs' {
 	It 'passes parseDateTime through to the GET request' {
 		Get-NinjaOneJobs -parseDateTime
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$ParseDateTime -eq $true
 		}
 	}
 
 	It 'delegates no-result global failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneJobs } | Should -Throw '*No jobs found*'
+		{ Get-NinjaOneJobs } | Pester\Should -Throw '*No jobs found*'
 
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates no-result device failures to New-NinjaOneError with device id' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneJobs -deviceId 5 } | Should -Throw '*No jobs found for device 5*'
+		{ Get-NinjaOneJobs -deviceId 5 } | Pester\Should -Throw '*No jobs found for device 5*'
 
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneSoftwareInventory' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@(
 				[pscustomobject]@{ id = 1; name = 'Microsoft Teams'; version = '1.6.0' }
 			)
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -2893,8 +2902,8 @@ Describe 'Get-NinjaOneSoftwareInventory' {
 	It 'always uses the software query endpoint' {
 		$result = Get-NinjaOneSoftwareInventory
 
-		@($result).Count | Should -Be 1
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		@($result).Count | Pester\Should -Be 1
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/queries/software'
 		}
 	}
@@ -2902,7 +2911,7 @@ Describe 'Get-NinjaOneSoftwareInventory' {
 	It 'passes deviceFilter as a query string parameter' {
 		Get-NinjaOneSoftwareInventory -deviceFilter 'org = 1'
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('deviceFilter')
 		}
 	}
@@ -2911,7 +2920,7 @@ Describe 'Get-NinjaOneSoftwareInventory' {
 		$dt = [datetime]'2024-05-01T00:00:00Z'
 		Get-NinjaOneSoftwareInventory -installedBefore $dt
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('installedBefore')
 		}
 	}
@@ -2920,7 +2929,7 @@ Describe 'Get-NinjaOneSoftwareInventory' {
 		$dt = [datetime]'2024-01-01T00:00:00Z'
 		Get-NinjaOneSoftwareInventory -installedAfter $dt
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('installedAfter')
 		}
 	}
@@ -2928,7 +2937,7 @@ Describe 'Get-NinjaOneSoftwareInventory' {
 	It 'removes installedBeforeUnixEpoch from parameters and promotes to installedBefore' {
 		Get-NinjaOneSoftwareInventory -installedBeforeUnixEpoch 1619712000
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			(-not $Parameters.ContainsKey('installedBeforeUnixEpoch')) -and $Parameters.ContainsKey('installedBefore')
 		}
 	}
@@ -2936,29 +2945,29 @@ Describe 'Get-NinjaOneSoftwareInventory' {
 	It 'removes installedAfterUnixEpoch from parameters and promotes to installedAfter' {
 		Get-NinjaOneSoftwareInventory -installedAfterUnixEpoch 1619712000
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			(-not $Parameters.ContainsKey('installedAfterUnixEpoch')) -and $Parameters.ContainsKey('installedAfter')
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneSoftwareInventory } | Should -Throw '*No software inventory found*'
+		{ Get-NinjaOneSoftwareInventory } | Pester\Should -Throw '*No software inventory found*'
 
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneOrganisations' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Contoso' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -2967,7 +2976,7 @@ Describe 'Get-NinjaOneOrganisations' {
 	It 'uses the organisations endpoint by default' {
 		$null = Get-NinjaOneOrganisations
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organizations'
 		}
 	}
@@ -2975,10 +2984,10 @@ Describe 'Get-NinjaOneOrganisations' {
 	It 'uses the detailed organisations endpoint when -detailed is supplied' {
 		$null = Get-NinjaOneOrganisations -detailed
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organizations-detailed'
 		}
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('detailed')
 		}
 	}
@@ -2986,44 +2995,44 @@ Describe 'Get-NinjaOneOrganisations' {
 	It 'uses the single-organisation endpoint when organisationId is supplied' {
 		$null = Get-NinjaOneOrganisations -organisationId 21
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/21'
 		}
 	}
 
 	It 'delegates upstream request failures to New-NinjaOneError without masking' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			throw 'request-failed'
 		}
 
-		{ Get-NinjaOneOrganisations } | Should -Throw '*request-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneOrganisations } | Pester\Should -Throw '*request-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'throws no-result organisation errors when the API returns null' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneOrganisations } | Should -Throw '*No organisations found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneOrganisations } | Pester\Should -Throw '*No organisations found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'throws no-result single organisation errors when the API returns null' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneOrganisations -organisationId 21 } | Should -Throw '*Organisation with id 21 not found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneOrganisations -organisationId 21 } | Pester\Should -Throw '*Organisation with id 21 not found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneLocations' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 101; name = 'London' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3032,7 +3041,7 @@ Describe 'Get-NinjaOneLocations' {
 	It 'uses the global locations endpoint when organisationId is not supplied' {
 		$null = Get-NinjaOneLocations
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/locations'
 		}
 	}
@@ -3040,31 +3049,31 @@ Describe 'Get-NinjaOneLocations' {
 	It 'uses the organisation locations endpoint when organisationId is supplied' {
 		$null = Get-NinjaOneLocations -organisationId 12
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/12/locations'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneLocations -organisationId 12 } | Should -Throw '*No locations found for organisation 12*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneLocations -organisationId 12 } | Pester\Should -Throw '*No locations found for organisation 12*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneDevices' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 7; systemName = 'WS-07' })
 		}
-		Mock -CommandName Get-NinjaOneOrganisations -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneOrganisations -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ id = 22 }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3073,7 +3082,7 @@ Describe 'Get-NinjaOneDevices' {
 	It 'uses the devices endpoint by default' {
 		$null = Get-NinjaOneDevices
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/devices'
 		}
 	}
@@ -3081,7 +3090,7 @@ Describe 'Get-NinjaOneDevices' {
 	It 'uses the detailed devices endpoint when -detailed is supplied' {
 		$null = Get-NinjaOneDevices -detailed
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/devices-detailed'
 		}
 	}
@@ -3089,7 +3098,7 @@ Describe 'Get-NinjaOneDevices' {
 	It 'uses the single device endpoint when deviceId is supplied' {
 		$null = Get-NinjaOneDevices -deviceId 7
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/7'
 		}
 	}
@@ -3097,10 +3106,10 @@ Describe 'Get-NinjaOneDevices' {
 	It 'uses the organisation devices endpoint when organisationId is supplied and organisation exists' {
 		$null = Get-NinjaOneDevices -organisationId 22
 
-		Assert-MockCalled -CommandName Get-NinjaOneOrganisations -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName Get-NinjaOneOrganisations -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$organisationId -eq 22
 		}
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/22/devices'
 		}
 	}
@@ -3108,44 +3117,44 @@ Describe 'Get-NinjaOneDevices' {
 	It 'passes parseDateTime through to the GET request' {
 		$null = Get-NinjaOneDevices -parseDateTime
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$ParseDateTime -eq $true
 		}
 	}
 
 	It 'delegates upstream request failures to New-NinjaOneError without masking' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			throw 'request-failed'
 		}
 
-		{ Get-NinjaOneDevices -deviceId 7 } | Should -Throw '*request-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDevices -deviceId 7 } | Pester\Should -Throw '*request-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'throws no-result global device errors when the API returns null' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneDevices } | Should -Throw '*No devices found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDevices } | Pester\Should -Throw '*No devices found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'throws no-result single device errors when the API returns null' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneDevices -deviceId 7 } | Should -Throw '*Device with id 7 not found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDevices -deviceId 7 } | Pester\Should -Throw '*Device with id 7 not found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneGroups' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Servers' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3154,7 +3163,7 @@ Describe 'Get-NinjaOneGroups' {
 	It 'uses the groups endpoint' {
 		$null = Get-NinjaOneGroups
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/groups'
 		}
 	}
@@ -3162,28 +3171,28 @@ Describe 'Get-NinjaOneGroups' {
 	It 'passes languageTag as a query parameter' {
 		$null = Get-NinjaOneGroups -languageTag 'en-GB'
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('languageTag')
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneGroups } | Should -Throw '*No groups found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneGroups } | Pester\Should -Throw '*No groups found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOnePolicies' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Workstation Policy' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3192,28 +3201,28 @@ Describe 'Get-NinjaOnePolicies' {
 	It 'uses the policies endpoint' {
 		$null = Get-NinjaOnePolicies
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/policies'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOnePolicies } | Should -Throw '*No policies found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOnePolicies } | Pester\Should -Throw '*No policies found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneRoles' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Server' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3222,28 +3231,28 @@ Describe 'Get-NinjaOneRoles' {
 	It 'uses the roles endpoint' {
 		$null = Get-NinjaOneRoles
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/roles'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneRoles } | Should -Throw '*No roles found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneRoles } | Pester\Should -Throw '*No roles found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneTasks' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Daily Health Check' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3252,25 +3261,25 @@ Describe 'Get-NinjaOneTasks' {
 	It 'uses the tasks endpoint' {
 		$null = Get-NinjaOneTasks
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/tasks'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneTasks } | Should -Throw '*No tasks found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneTasks } | Pester\Should -Throw '*No tasks found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneNotificationChannels' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Email' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3279,7 +3288,7 @@ Describe 'Get-NinjaOneNotificationChannels' {
 	It 'uses the notification channels endpoint by default' {
 		$null = Get-NinjaOneNotificationChannels
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/notification-channels'
 		}
 	}
@@ -3287,37 +3296,37 @@ Describe 'Get-NinjaOneNotificationChannels' {
 	It 'uses the enabled notification channels endpoint when -enabled is supplied' {
 		$null = Get-NinjaOneNotificationChannels -enabled
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/notification-channels/enabled'
 		}
 	}
 
 	It 'delegates upstream request failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			throw 'notification-request-failed'
 		}
 
-		{ Get-NinjaOneNotificationChannels } | Should -Throw '*notification-request-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneNotificationChannels } | Pester\Should -Throw '*notification-request-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'throws no-result notification channel errors when the API returns null' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneNotificationChannels } | Should -Throw '*No notification channels found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneNotificationChannels } | Pester\Should -Throw '*No notification channels found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneAutomations' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Reboot Device' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3326,7 +3335,7 @@ Describe 'Get-NinjaOneAutomations' {
 	It 'uses the automation scripts endpoint' {
 		$null = Get-NinjaOneAutomations
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/automation/scripts'
 		}
 	}
@@ -3334,37 +3343,37 @@ Describe 'Get-NinjaOneAutomations' {
 	It 'passes languageTag as a query parameter' {
 		$null = Get-NinjaOneAutomations -languageTag 'en'
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('languageTag')
 		}
 	}
 
 	It 'delegates upstream request failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			throw 'automation-request-failed'
 		}
 
-		{ Get-NinjaOneAutomations } | Should -Throw '*automation-request-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneAutomations } | Pester\Should -Throw '*automation-request-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'throws no-result automation errors when the API returns null' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneAutomations } | Should -Throw '*No automation scripts found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneAutomations } | Pester\Should -Throw '*No automation scripts found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneContact' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{ id = 42; name = 'Sam Contact' }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3373,28 +3382,28 @@ Describe 'Get-NinjaOneContact' {
 	It 'uses the contact endpoint with the provided id' {
 		$null = Get-NinjaOneContact -id 42
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/contact/42'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneContact -id 42 } | Should -Throw '*Contact with id 42 not found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneContact -id 42 } | Pester\Should -Throw '*Contact with id 42 not found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneDeviceCustomFields' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ scope = 'node'; fieldName = 'assetTag' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3403,7 +3412,7 @@ Describe 'Get-NinjaOneDeviceCustomFields' {
 	It 'uses the global custom fields endpoint by default' {
 		$null = Get-NinjaOneDeviceCustomFields
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device-custom-fields'
 		}
 	}
@@ -3411,7 +3420,7 @@ Describe 'Get-NinjaOneDeviceCustomFields' {
 	It 'uses the device custom fields endpoint when deviceId is supplied' {
 		$null = Get-NinjaOneDeviceCustomFields -deviceId 99
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/99/custom-fields'
 		}
 	}
@@ -3419,7 +3428,7 @@ Describe 'Get-NinjaOneDeviceCustomFields' {
 	It 'passes scope as a query parameter' {
 		$null = Get-NinjaOneDeviceCustomFields -scope 'node'
 
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('scope')
 		}
 	}
@@ -3427,13 +3436,13 @@ Describe 'Get-NinjaOneDeviceCustomFields' {
 
 Describe 'Get-NinjaOneSoftwareProducts' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 1; name = 'Microsoft Edge' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3442,7 +3451,7 @@ Describe 'Get-NinjaOneSoftwareProducts' {
 	It 'uses the global software products endpoint when deviceId is not supplied' {
 		$null = Get-NinjaOneSoftwareProducts
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/software-products'
 		}
 	}
@@ -3450,28 +3459,28 @@ Describe 'Get-NinjaOneSoftwareProducts' {
 	It 'uses the device software endpoint when deviceId is supplied' {
 		$null = Get-NinjaOneSoftwareProducts -deviceId 7
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/7/software'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError with device id' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneSoftwareProducts -deviceId 7 } | Should -Throw '*No software products found for device 7*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneSoftwareProducts -deviceId 7 } | Pester\Should -Throw '*No software products found for device 7*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneSystemContacts' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			@([pscustomobject]@{ id = 9; name = 'Operations Team' })
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3480,29 +3489,29 @@ Describe 'Get-NinjaOneSystemContacts' {
 	It 'uses the contacts endpoint' {
 		$null = Get-NinjaOneSystemContacts
 
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/contacts'
 		}
 	}
 
 	It 'delegates no-result failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneSystemContacts } | Should -Throw '*No system contacts found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneSystemContacts } | Pester\Should -Throw '*No system contacts found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'New-NinjaOneContact' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{
 				resource = $Resource
 				body = $Body
 			}
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3512,31 +3521,31 @@ Describe 'New-NinjaOneContact' {
 		$payload = @{ firstName = 'Jane'; lastName = 'Doe'; email = 'jane@example.com' }
 		$result = New-NinjaOneContact -contact $payload -Confirm:$false
 
-		$result.resource | Should -Be 'v2/contacts'
-		$result.body.firstName | Should -Be 'Jane'
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/contacts'
+		$result.body.firstName | Pester\Should -Be 'Jane'
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/contacts'
 		}
 	}
 
 	It 'delegates POST failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'create-contact-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'create-contact-failed' }
 
-		{ New-NinjaOneContact -contact @{ firstName = 'Jane' } -Confirm:$false } | Should -Throw '*create-contact-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ New-NinjaOneContact -contact @{ firstName = 'Jane' } -Confirm:$false } | Pester\Should -Throw '*create-contact-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneContact' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{
 				resource = $Resource
 				body = $Body
 			}
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3546,28 +3555,28 @@ Describe 'Set-NinjaOneContact' {
 		$payload = @{ phone = '+3100000000' }
 		$result = Set-NinjaOneContact -id 123 -contact $payload -Confirm:$false
 
-		$result.resource | Should -Be 'v2/contact/123'
-		$result.body.phone | Should -Be '+3100000000'
-		Assert-MockCalled -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/contact/123'
+		$result.body.phone | Pester\Should -Be '+3100000000'
+		Pester\Should-Invoke -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/contact/123'
 		}
 	}
 
 	It 'delegates PATCH failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'update-contact-failed' }
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'update-contact-failed' }
 
-		{ Set-NinjaOneContact -id 123 -contact @{ phone = '+3100000000' } -Confirm:$false } | Should -Throw '*update-contact-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Set-NinjaOneContact -id 123 -contact @{ phone = '+3100000000' } -Confirm:$false } | Pester\Should -Throw '*update-contact-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneUserRoles' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource)
 			[pscustomobject]@{ resource = $Resource }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3576,27 +3585,27 @@ Describe 'Get-NinjaOneUserRoles' {
 	It 'gets user roles from the user roles endpoint' {
 		$result = Get-NinjaOneUserRoles
 
-		$result.resource | Should -Be 'v2/user/roles'
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/user/roles'
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/user/roles'
 		}
 	}
 
 	It 'delegates GET failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'get-user-roles-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'get-user-roles-failed' }
 
-		{ Get-NinjaOneUserRoles } | Should -Throw '*get-user-roles-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneUserRoles } | Pester\Should -Throw '*get-user-roles-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneTags' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource)
 			[pscustomobject]@{ resource = $Resource }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3605,30 +3614,30 @@ Describe 'Get-NinjaOneTags' {
 	It 'gets tags from the tags endpoint' {
 		$result = Get-NinjaOneTags
 
-		$result.resource | Should -Be 'v2/tag'
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/tag'
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/tag'
 		}
 	}
 
 	It 'delegates GET failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'get-tags-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'get-tags-failed' }
 
-		{ Get-NinjaOneTags } | Should -Throw '*get-tags-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneTags } | Pester\Should -Throw '*get-tags-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'New-NinjaOneTab' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{
 				resource = $Resource
 				body = $Body
 			}
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3638,9 +3647,9 @@ Describe 'New-NinjaOneTab' {
 		$payload = @{ name = 'Operations'; entityType = 'ORGANIZATION' }
 		$result = New-NinjaOneTab -tab $payload -Confirm:$false
 
-		$result.resource | Should -Be 'v2/tab'
-		$result.body.name | Should -Be 'Operations'
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/tab'
+		$result.body.name | Pester\Should -Be 'Operations'
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/tab' -and $Body.name -eq 'Operations'
 		}
 	}
@@ -3648,27 +3657,27 @@ Describe 'New-NinjaOneTab' {
 	It 'does not post the tab payload when WhatIf is used' {
 		New-NinjaOneTab -tab @{ name = 'Operations' } -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates POST failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'create-tab-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'create-tab-failed' }
 
-		{ New-NinjaOneTab -tab @{ name = 'Operations' } -Confirm:$false } | Should -Throw '*create-tab-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ New-NinjaOneTab -tab @{ name = 'Operations' } -Confirm:$false } | Pester\Should -Throw '*create-tab-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Set-NinjaOneTab' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{
 				resource = $Resource
 				body = $Body
 			}
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3678,9 +3687,9 @@ Describe 'Set-NinjaOneTab' {
 		$payload = @{ position = 2 }
 		$result = Set-NinjaOneTab -tabId 14 -tab $payload -Confirm:$false
 
-		$result.resource | Should -Be 'v2/tab/14'
-		$result.body.position | Should -Be 2
-		Assert-MockCalled -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/tab/14'
+		$result.body.position | Pester\Should -Be 2
+		Pester\Should-Invoke -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/tab/14' -and $Body.position -eq 2
 		}
 	}
@@ -3688,22 +3697,22 @@ Describe 'Set-NinjaOneTab' {
 	It 'does not patch the tab payload when WhatIf is used' {
 		Set-NinjaOneTab -tabId 14 -tab @{ position = 2 } -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates PATCH failures to New-NinjaOneError' {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'update-tab-failed' }
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'update-tab-failed' }
 
-		{ Set-NinjaOneTab -tabId 14 -tab @{ position = 2 } -Confirm:$false } | Should -Throw '*update-tab-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Set-NinjaOneTab -tabId 14 -tab @{ position = 2 } -Confirm:$false } | Pester\Should -Throw '*update-tab-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 Describe 'Billing query functions' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{
 				resource = $Resource
@@ -3711,7 +3720,7 @@ Describe 'Billing query functions' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3755,8 +3764,8 @@ Describe 'Billing query functions' {
 	It 'gets the <Name> collection' -ForEach $BillingQueryCases {
 		$result = & $PSItem.InvokeCollection
 
-		$result.resource | Should -Be $PSItem.CollectionResource
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be $PSItem.CollectionResource
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq $PSItem.CollectionResource
 		}
 	}
@@ -3764,35 +3773,35 @@ Describe 'Billing query functions' {
 	It 'gets a specific <Name> item and removes id from the query' -ForEach $BillingQueryCases {
 		$result = & $PSItem.InvokeItem
 
-		$result.resource | Should -Be $PSItem.ItemResource
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be $PSItem.ItemResource
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('Id')
 		}
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq $PSItem.ItemResource
 		}
 	}
 
 	It 'delegates no-result errors for <Name>' -ForEach $BillingQueryCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ & $PSItem.InvokeCollection } | Should -Throw ('*{0}*' -f $PSItem.NoResultError)
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.InvokeCollection } | Pester\Should -Throw ('*{0}*' -f $PSItem.NoResultError)
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates upstream API errors for <Name>' -ForEach $BillingQueryCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'billing-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'billing-api-failed' }
 
-		{ & $PSItem.InvokeCollection } | Should -Throw '*billing-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.InvokeCollection } | Pester\Should -Throw '*billing-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 Describe 'Device detail query functions' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{
 				resource = $Resource
@@ -3800,7 +3809,7 @@ Describe 'Device detail query functions' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3837,24 +3846,24 @@ Describe 'Device detail query functions' {
 	It 'gets device <Name> and excludes deviceId from the query' -ForEach $DeviceDetailCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be $PSItem.Resource
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('deviceId')
 		}
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq $PSItem.Resource
 		}
 	}
 
 	It 'delegates upstream API errors for device <Name>' -ForEach $DeviceDetailCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-detail-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-detail-api-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*device-detail-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*device-detail-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'returns policy overrides without expansion by default' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{
 				id = 26
 				overrides = @('antivirus', 'patching')
@@ -3863,12 +3872,12 @@ Describe 'Device detail query functions' {
 
 		$result = Get-NinjaOneDevicePolicyOverrides -deviceId 26
 
-		$result.id | Should -Be 26
-		$result.overrides | Should -HaveCount 2
+		$result.id | Pester\Should -Be 26
+		$result.overrides | Pester\Should -HaveCount 2
 	}
 
 	It 'expands policy overrides when requested' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{
 				overrides = @('antivirus', 'patching')
 			}
@@ -3876,31 +3885,31 @@ Describe 'Device detail query functions' {
 
 		$result = Get-NinjaOneDevicePolicyOverrides -deviceId 26 -expandOverrides
 
-		$result | Should -HaveCount 2
-		$result[0] | Should -Be 'antivirus'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result | Pester\Should -HaveCount 2
+		$result[0] | Pester\Should -Be 'antivirus'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('deviceId')
 		}
 	}
 
 	It 'delegates policy override API errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'policy-overrides-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'policy-overrides-api-failed' }
 
-		{ Get-NinjaOneDevicePolicyOverrides -deviceId 26 } | Should -Throw '*policy-overrides-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDevicePolicyOverrides -deviceId 26 } | Pester\Should -Throw '*policy-overrides-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Backup and patch install query families' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{ resource = $Resource; query = $QSCollection }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3930,33 +3939,33 @@ Describe 'Backup and patch install query families' {
 	It 'gets <Name>' -ForEach $BackupCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
+		$result.resource | Pester\Should -Be $PSItem.Resource
 	}
 
 	It 'handles empty <Name> results' -ForEach $BackupCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
 		if ($PSItem.NoResultError) {
-			{ & $PSItem.Invoke } | Should -Throw ('*{0}*' -f $PSItem.NoResultError)
+			{ & $PSItem.Invoke } | Pester\Should -Throw ('*{0}*' -f $PSItem.NoResultError)
 		}
 		else {
-			{ & $PSItem.Invoke } | Should -Not -Throw
+			{ & $PSItem.Invoke } | Pester\Should -Not -Throw
 		}
 	}
 
 	It 'delegates <Name> API failures' -ForEach $BackupCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'backup-query-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'backup-query-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*backup-query-failed*'
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*backup-query-failed*'
 	}
 }
 
 Describe 'Custom field query functions' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{
 				resource = $Resource
@@ -3964,7 +3973,7 @@ Describe 'Custom field query functions' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -3997,53 +4006,53 @@ Describe 'Custom field query functions' {
 	It 'gets <Name> and excludes route parameters from the query' -ForEach $CustomFieldQueryCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be $PSItem.Resource
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$ExpectedRemoved = $PSItem.RemovedParameters
 			-not ($ExpectedRemoved | Where-Object { $Parameters.ContainsKey($_) })
 		}
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq $PSItem.Resource
 		}
 	}
 
 	It 'delegates no-result errors for <Name>' -ForEach $CustomFieldQueryCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ & $PSItem.Invoke } | Should -Throw ('*{0}*' -f $PSItem.NoResultError)
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw ('*{0}*' -f $PSItem.NoResultError)
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates upstream errors for <Name>' -ForEach $CustomFieldQueryCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'custom-field-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'custom-field-api-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*custom-field-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*custom-field-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets paged custom field schema results' {
 		$result = Get-NinjaOneCustomFieldsSchema -cursorName 'next-page' -pageSize 25
 
-		$result.resource | Should -Be 'v2/custom-fields'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/custom-fields'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('cursorName') -and $Parameters.ContainsKey('pageSize')
 		}
 	}
 
 	It 'delegates custom field schema API errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'schema-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'schema-api-failed' }
 
-		{ Get-NinjaOneCustomFieldsSchema } | Should -Throw '*schema-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneCustomFieldsSchema } | Pester\Should -Throw '*schema-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneGroupMembers' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{
 				resource = $Resource
@@ -4051,7 +4060,7 @@ Describe 'Get-NinjaOneGroupMembers' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4060,40 +4069,40 @@ Describe 'Get-NinjaOneGroupMembers' {
 	It 'gets group members and excludes groupId from the query' {
 		$result = Get-NinjaOneGroupMembers -groupId 41 -refresh 'true'
 
-		$result.resource | Should -Be 'v2/group/41/device-ids'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/group/41/device-ids'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('groupId') -and $Parameters.ContainsKey('refresh')
 		}
 	}
 
 	It 'delegates no-result errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneGroupMembers -groupId 41 } | Should -Throw '*No group members found for group 41.*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneGroupMembers -groupId 41 } | Pester\Should -Throw '*No group members found for group 41.*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates upstream API errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'group-members-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'group-members-api-failed' }
 
-		{ Get-NinjaOneGroupMembers -groupId 41 } | Should -Throw '*group-members-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneGroupMembers -groupId 41 } | Pester\Should -Throw '*group-members-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Policy condition query functions' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{
 				resource = $Resource
 				query = $QSCollection
 			}
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4117,18 +4126,18 @@ Describe 'Policy condition query functions' {
 	It 'gets a specific <Name> and excludes route parameters' -ForEach $PolicyConditionCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be $PSItem.Resource
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$ExpectedRemoved = $PSItem.RemovedParameters
 			-not ($ExpectedRemoved | Where-Object { $Parameters.ContainsKey($_) })
 		}
 	}
 
 	It 'delegates upstream API errors for <Name>' -ForEach $PolicyConditionCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'policy-condition-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'policy-condition-api-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*policy-condition-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*policy-condition-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	$PolicyConditionCollectionCases = @(
@@ -4149,33 +4158,33 @@ Describe 'Policy condition query functions' {
 	It 'gets <Name> and excludes policyId from the query' -ForEach $PolicyConditionCollectionCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be $PSItem.Resource
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('policyId')
 		}
 	}
 
 	It 'delegates no-result errors for <Name>' -ForEach $PolicyConditionCollectionCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ & $PSItem.Invoke } | Should -Throw ('*{0}*' -f $PSItem.NoResultError)
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw ('*{0}*' -f $PSItem.NoResultError)
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates collection API errors for <Name>' -ForEach $PolicyConditionCollectionCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'policy-conditions-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'policy-conditions-api-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*policy-conditions-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*policy-conditions-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Get-NinjaOneNodeRoles' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{
 				resource = $Resource
@@ -4183,7 +4192,7 @@ Describe 'Get-NinjaOneNodeRoles' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4192,26 +4201,26 @@ Describe 'Get-NinjaOneNodeRoles' {
 	It 'gets assignable node roles' {
 		$result = Get-NinjaOneNodeRoles -isAssignable
 
-		$result.resource | Should -Be 'v2/noderole/list'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/noderole/list'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('isAssignable')
 		}
 	}
 
 	It 'delegates upstream API errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'node-roles-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'node-roles-api-failed' }
 
-		{ Get-NinjaOneNodeRoles } | Should -Throw '*node-roles-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneNodeRoles } | Pester\Should -Throw '*node-roles-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Knowledge base query functions' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{
 				resource = $Resource
@@ -4219,7 +4228,7 @@ Describe 'Knowledge base query functions' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4243,25 +4252,25 @@ Describe 'Knowledge base query functions' {
 	It 'gets <Name> with expected query parameters' -ForEach $KnowledgeBaseCollectionCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be $PSItem.Resource
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$ExpectedParameters = $PSItem.ExpectedQueryParameters
 			-not ($ExpectedParameters | Where-Object { -not $Parameters.ContainsKey($_) })
 		}
 	}
 
 	It 'delegates upstream API errors for <Name>' -ForEach $KnowledgeBaseCollectionCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'knowledge-base-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'knowledge-base-api-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*knowledge-base-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*knowledge-base-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'downloads a knowledge base article by default' {
 		$result = Get-NinjaOneKnowledgeBaseArticle -articleId 63
 
-		$result.resource | Should -Be 'v2/knowledgebase/article/63/download'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/knowledgebase/article/63/download'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('articleId')
 		}
 	}
@@ -4269,21 +4278,21 @@ Describe 'Knowledge base query functions' {
 	It 'gets signed URLs for a knowledge base article' {
 		$result = Get-NinjaOneKnowledgeBaseArticle -articleId 63 -signedUrls
 
-		$result.resource | Should -Be 'v2/knowledgebase/article/63/signed-urls'
+		$result.resource | Pester\Should -Be 'v2/knowledgebase/article/63/signed-urls'
 	}
 
 	It 'delegates knowledge base article API errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'article-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'article-api-failed' }
 
-		{ Get-NinjaOneKnowledgeBaseArticle -articleId 63 } | Should -Throw '*article-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneKnowledgeBaseArticle -articleId 63 } | Pester\Should -Throw '*article-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets all knowledge base folders with filters' {
 		$result = Get-NinjaOneKnowledgeBaseFolders -folderPath 'Operations/Runbooks' -organisationId 64
 
-		$result.resource | Should -Be 'v2/knowledgebase/folder'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/knowledgebase/folder'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('folderId') -and
 			$Parameters.ContainsKey('folderPath') -and
 			$Parameters.ContainsKey('organisationId')
@@ -4293,23 +4302,23 @@ Describe 'Knowledge base query functions' {
 	It 'gets a specific knowledge base folder' {
 		$result = Get-NinjaOneKnowledgeBaseFolders -folderId 65
 
-		$result.resource | Should -Be 'v2/knowledgebase/folder/65'
+		$result.resource | Pester\Should -Be 'v2/knowledgebase/folder/65'
 	}
 
 	It 'delegates knowledge base folder API errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'folder-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'folder-api-failed' }
 
-		{ Get-NinjaOneKnowledgeBaseFolders } | Should -Throw '*folder-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneKnowledgeBaseFolders } | Pester\Should -Throw '*folder-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Organisation and management query functions' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection, $Raw)
 			[pscustomobject]@{
 				resource = $Resource
@@ -4318,7 +4327,7 @@ Describe 'Organisation and management query functions' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord, $Message)
 			if ($ErrorRecord) {
 				throw $ErrorRecord.Exception
@@ -4328,7 +4337,7 @@ Describe 'Organisation and management query functions' {
 	}
 
 	It 'gets organisation devices with paging parameters' {
-		Mock -CommandName Get-NinjaOneDevices -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneDevices -ModuleName $ModuleName -MockWith {
 			param($organisationId, $after, $pageSize)
 			[pscustomobject]@{
 				organisationId = $organisationId
@@ -4339,52 +4348,52 @@ Describe 'Organisation and management query functions' {
 
 		$result = Get-NinjaOneOrganisationDevices -organisationId 71 -after 10 -pageSize 25
 
-		$result.organisationId | Should -Be 71
-		$result.after | Should -Be 10
-		$result.pageSize | Should -Be 25
+		$result.organisationId | Pester\Should -Be 71
+		$result.after | Pester\Should -Be 10
+		$result.pageSize | Pester\Should -Be 25
 	}
 
 	It 'gets backup usage for all organisation locations' {
 		$result = Get-NinjaOneOrganisationLocationBackupUsage -organisationId 72
 
-		$result.resource | Should -Be 'v2/organization/72/locations/backup/usage'
+		$result.resource | Pester\Should -Be 'v2/organization/72/locations/backup/usage'
 	}
 
 	It 'gets backup usage for a specific organisation location' {
 		$result = Get-NinjaOneOrganisationLocationBackupUsage -organisationId 72 -locationId 73
 
-		$result.resource | Should -Be 'v2/organization/72/locations/73/backup/usage'
+		$result.resource | Pester\Should -Be 'v2/organization/72/locations/73/backup/usage'
 	}
 
 	It 'delegates organisation backup usage API errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'backup-usage-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'backup-usage-api-failed' }
 
-		{ Get-NinjaOneOrganisationLocationBackupUsage -organisationId 72 } | Should -Throw '*backup-usage-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneOrganisationLocationBackupUsage -organisationId 72 } | Pester\Should -Throw '*backup-usage-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets a raw device dashboard redirect' {
 		$result = Get-NinjaOneDeviceDashboardURL -deviceId 74 -redirect
 
-		$result.resource | Should -Be 'v2/device/74/dashboard-url'
-		$result.raw | Should -BeTrue
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/device/74/dashboard-url'
+		$result.raw | Pester\Should -BeTrue
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('deviceId')
 		}
 	}
 
 	It 'delegates empty dashboard URL results' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneDeviceDashboardURL -deviceId 74 } | Should -Throw
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDeviceDashboardURL -deviceId 74 } | Pester\Should -Throw
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets an installer and excludes route parameters' {
 		$result = Get-NinjaOneInstaller -organisationId 75 -locationId 76 -installerType 'WINDOWS_MSI'
 
-		$result.resource | Should -Be 'v2/organization/75/location/76/installer/WINDOWS_MSI'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/organization/75/location/76/installer/WINDOWS_MSI'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('organisationId') -and
 			-not $Parameters.ContainsKey('locationId') -and
 			-not $Parameters.ContainsKey('installerType')
@@ -4392,30 +4401,30 @@ Describe 'Organisation and management query functions' {
 	}
 
 	It 'delegates installer API errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'installer-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'installer-api-failed' }
 
-		{ Get-NinjaOneInstaller -organisationId 75 -locationId 76 -installerType 'WINDOWS_MSI' } | Should -Throw '*installer-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneInstaller -organisationId 75 -locationId 76 -installerType 'WINDOWS_MSI' } | Pester\Should -Throw '*installer-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Device management actions' {
 	BeforeEach {
-		Mock -CommandName Get-NinjaOneDevice -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneDevice -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{
 				id = 81
 				systemName = 'WORKSTATION-81'
 			}
 		}
 
-		Mock -CommandName Get-NinjaOneDeviceWindowsServices -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneDeviceWindowsServices -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{
 				displayName = 'Print Spooler'
 			}
 		}
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4424,7 +4433,7 @@ Describe 'Device management actions' {
 	It 'restarts a device with a reason when confirmed' {
 		Restart-NinjaOneDevice -deviceId 81 -mode 'FORCED' -reason 'Maintenance' -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/81/reboot/FORCED' -and $Body.reason -eq 'Maintenance'
 		}
 	}
@@ -4432,66 +4441,66 @@ Describe 'Device management actions' {
 	It 'does not restart a device when WhatIf is used' {
 		Restart-NinjaOneDevice -deviceId 81 -mode 'NORMAL' -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates restart API errors' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'restart-api-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'restart-api-failed' }
 
-		{ Restart-NinjaOneDevice -deviceId 81 -mode 'NORMAL' -Confirm:$false } | Should -Throw '*restart-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Restart-NinjaOneDevice -deviceId 81 -mode 'NORMAL' -Confirm:$false } | Pester\Should -Throw '*restart-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'resets device policy overrides when confirmed' {
 		Reset-NinjaOneDevicePolicyOverrides -deviceId 81 -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/81/policy/overrides'
 		}
 	}
 
 	It 'delegates missing devices when resetting policy overrides' {
-		Mock -CommandName Get-NinjaOneDevice -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName Get-NinjaOneDevice -ModuleName $ModuleName -MockWith { $null }
 
-		{ Reset-NinjaOneDevicePolicyOverrides -deviceId 81 -Confirm:$false } | Should -Throw '*Device with id 81 not found.*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Reset-NinjaOneDevicePolicyOverrides -deviceId 81 -Confirm:$false } | Pester\Should -Throw '*Device with id 81 not found.*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'invokes a Windows service action when confirmed' {
 		Invoke-NinjaOneWindowsServiceAction -deviceId 81 -serviceId 'Spooler' -action 'RESTART' -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/device/81/windows-service/Spooler/control' -and $Body.action -eq 'RESTART'
 		}
 	}
 
 	It 'delegates missing Windows services' {
-		Mock -CommandName Get-NinjaOneDeviceWindowsServices -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName Get-NinjaOneDeviceWindowsServices -ModuleName $ModuleName -MockWith { $null }
 
-		{ Invoke-NinjaOneWindowsServiceAction -deviceId 81 -serviceId 'Missing' -action 'START' -Confirm:$false } | Should -Throw '*Service with id Missing not found.*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Invoke-NinjaOneWindowsServiceAction -deviceId 81 -serviceId 'Missing' -action 'START' -Confirm:$false } | Pester\Should -Throw '*Service with id Missing not found.*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates missing devices for Windows service actions' {
-		Mock -CommandName Get-NinjaOneDevice -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName Get-NinjaOneDevice -ModuleName $ModuleName -MockWith { $null }
 
-		{ Invoke-NinjaOneWindowsServiceAction -deviceId 81 -serviceId 'Spooler' -action 'START' -Confirm:$false } | Should -Throw '*Device with id 81 not found.*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Invoke-NinjaOneWindowsServiceAction -deviceId 81 -serviceId 'Spooler' -action 'START' -Confirm:$false } | Pester\Should -Throw '*Device with id 81 not found.*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'does not invoke a Windows service action when WhatIf is used' {
 		Invoke-NinjaOneWindowsServiceAction -deviceId 81 -serviceId 'Spooler' -action 'STOP' -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
 	}
 }
 
 Describe 'Additional public API coverage' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{
 				resource = $Resource
@@ -4499,19 +4508,19 @@ Describe 'Additional public API coverage' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'post'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'put'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{ method = 'delete'; resource = $Resource; query = $QSCollection }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4520,80 +4529,80 @@ Describe 'Additional public API coverage' {
 	It 'gets all asset relationships' {
 		$result = Get-NinjaOneAssetRelationships
 
-		$result.resource | Should -Be 'v2/itam/asset-relationship/relations'
+		$result.resource | Pester\Should -Be 'v2/itam/asset-relationship/relations'
 	}
 
 	It 'gets asset relationships for a specific entity' {
 		$result = Get-NinjaOneAssetRelationships -entityType 'DEVICE' -entityId 91
 
-		$result.resource | Should -Be 'v2/itam/asset-relationship/DEVICE/91/relations'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/itam/asset-relationship/DEVICE/91/relations'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('EntityType') -and -not $Parameters.ContainsKey('EntityId')
 		}
 	}
 
 	It 'delegates empty asset relationship results' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneAssetRelationships } | Should -Throw '*No asset relationships found.*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneAssetRelationships } | Pester\Should -Throw '*No asset relationships found.*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets billing products for a ticket' {
 		$result = Get-NinjaOneBillingTicketProducts -ticketId 92
 
-		$result.resource | Should -Be 'v2/billing/ticket-products/ticket/92'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/billing/ticket-products/ticket/92'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('TicketId')
 		}
 	}
 
 	It 'delegates empty billing ticket product results' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneBillingTicketProducts -ticketId 92 } | Should -Throw '*No billing ticket products found for ticket 92.*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneBillingTicketProducts -ticketId 92 } | Pester\Should -Throw '*No billing ticket products found for ticket 92.*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'creates custom fields in bulk' {
 		$result = Invoke-NinjaOneCustomFieldsBulk -operation 'create' -customFields @(@{ name = 'Region' }) -Confirm:$false
 
-		$result.method | Should -Be 'post'
-		$result.resource | Should -Be 'v2/custom-fields/bulk'
+		$result.method | Pester\Should -Be 'post'
+		$result.resource | Pester\Should -Be 'v2/custom-fields/bulk'
 	}
 
 	It 'updates custom fields in bulk' {
 		$result = Invoke-NinjaOneCustomFieldsBulk -operation 'update' -customFields @(@{ name = 'Region'; label = 'Office Region' }) -Confirm:$false
 
-		$result.method | Should -Be 'put'
-		$result.body[0].label | Should -Be 'Office Region'
+		$result.method | Pester\Should -Be 'put'
+		$result.body[0].label | Pester\Should -Be 'Office Region'
 	}
 
 	It 'deletes custom fields in bulk' {
 		$result = Invoke-NinjaOneCustomFieldsBulk -operation 'delete' -fieldNames @('Region', 'Floor') -Confirm:$false
 
-		$result.method | Should -Be 'delete'
-		$result.resource | Should -Be 'v2/custom-fields/bulk'
-		$result.query.fieldNames | Should -Be 'Region,Floor'
+		$result.method | Pester\Should -Be 'delete'
+		$result.resource | Pester\Should -Be 'v2/custom-fields/bulk'
+		$result.query.fieldNames | Pester\Should -Be 'Region,Floor'
 	}
 
 	It 'does not execute bulk custom field operations with WhatIf' {
 		Invoke-NinjaOneCustomFieldsBulk -operation 'create' -customFields @(@{ name = 'Region' }) -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
 	}
 }
 
 Describe 'Additional public query coverage' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{ resource = $Resource; query = $QSCollection }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4624,43 +4633,43 @@ Describe 'Additional public query coverage' {
 	It 'gets <Name>' -ForEach $SimpleQueryCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
+		$result.resource | Pester\Should -Be $PSItem.Resource
 	}
 
 	It 'delegates empty results for <Name>' -ForEach $SimpleQueryCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ & $PSItem.Invoke } | Should -Throw ('*{0}*' -f $PSItem.NoResultError)
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw ('*{0}*' -f $PSItem.NoResultError)
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates API errors for <Name>' -ForEach $SimpleQueryCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'simple-query-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'simple-query-api-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*simple-query-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*simple-query-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'searches devices with query and limit parameters' {
 		$result = Find-NinjaOneDevices -searchQuery 'WORKSTATION' -limit 10
 
-		$result.resource | Should -Be 'v2/devices/search'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/devices/search'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Parameters.ContainsKey('searchQuery') -and $Parameters.ContainsKey('limit')
 		}
 	}
 
 	It 'delegates device search API errors' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-search-api-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-search-api-failed' }
 
-		{ Find-NinjaOneDevices -searchQuery 'WORKSTATION' } | Should -Throw '*device-search-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Find-NinjaOneDevices -searchQuery 'WORKSTATION' } | Pester\Should -Throw '*device-search-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Instance capabilities' {
 	BeforeEach {
-		Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{
 				BaseUrl = 'https://fed.ninjarmm.com'
 				Version = '7.2.0'
@@ -4671,12 +4680,12 @@ Describe 'Instance capabilities' {
 				}
 			}
 		}
-		Mock -CommandName Get-Module -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-Module -ModuleName $ModuleName -MockWith {
 			[pscustomobject]@{
 				ExportedFunctions = [ordered]@{ 'Get-NinjaOneAlerts' = $true; 'Get-NinjaOneMysteryCommand' = $true }
 			}
 		}
-		Mock -CommandName Get-Command -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName Get-Command -ModuleName $ModuleName -MockWith {
 			param($Module, $CommandType)
 
 			@(
@@ -4695,36 +4704,36 @@ Describe 'Instance capabilities' {
 	It 'returns capability summary for an instance' {
 		$result = Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com'
 
-		$result.BaseUrl | Should -Be 'https://fed.ninjarmm.com'
-		$result.PathCount | Should -Be 1
+		$result.BaseUrl | Pester\Should -Be 'https://fed.ninjarmm.com'
+		$result.PathCount | Pester\Should -Be 1
 	}
 
 	It 'delegates missing instance selection' {
-		Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName Get-NinjaOneInstanceCapabilitiesInternal -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneInstanceCapabilities } | Should -Throw '*No instance selected*'
+		{ Get-NinjaOneInstanceCapabilities } | Pester\Should -Throw '*No instance selected*'
 	}
 
 	It 'includes supported cmdlets when requested' {
 		$result = Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com' -includeCmdlets
 
-		$result.SupportedCmdletCount | Should -Be 0
-		$result.UnsupportedCmdletCount | Should -Be 0
+		$result.SupportedCmdletCount | Pester\Should -Be 0
+		$result.UnsupportedCmdletCount | Pester\Should -Be 0
 	}
 
 	It 'includes raw paths when requested' {
 		$result = Get-NinjaOneInstanceCapabilities -baseUrl 'https://fed.ninjarmm.com' -includePaths
 
-		$result.Paths['/v2/alerts'] | Should -Contain 'GET'
+		$result.Paths['/v2/alerts'] | Pester\Should -Contain 'GET'
 	}
 }
 
 Describe 'Scripting options and document templates' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{
 				resource = $Resource
@@ -4733,7 +4742,7 @@ Describe 'Scripting options and document templates' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4742,8 +4751,8 @@ Describe 'Scripting options and document templates' {
 	It 'returns full device scripting options by default' {
 		$result = Get-NinjaOneDeviceScriptingOptions -deviceId 101 -languageTag 'en-US'
 
-		$result.resource | Should -Be 'v2/device/101/scripting/options'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/device/101/scripting/options'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('deviceId') -and $Parameters.ContainsKey('languageTag')
 		}
 	}
@@ -4751,67 +4760,67 @@ Describe 'Scripting options and document templates' {
 	It 'returns scripting categories only' {
 		$result = Get-NinjaOneDeviceScriptingOptions -deviceId 101 -categories
 
-		$result | Should -HaveCount 2
-		$result[0] | Should -Be 'Maintenance'
+		$result | Pester\Should -HaveCount 2
+		$result[0] | Pester\Should -Be 'Maintenance'
 	}
 
 	It 'returns scripts only' {
 		$result = Get-NinjaOneDeviceScriptingOptions -deviceId 101 -scripts
 
-		$result | Should -HaveCount 2
-		$result[0] | Should -Be 'Patch Devices'
+		$result | Pester\Should -HaveCount 2
+		$result[0] | Pester\Should -Be 'Patch Devices'
 	}
 
 	It 'delegates empty scripting option results' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneDeviceScriptingOptions -deviceId 101 } | Should -Throw
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDeviceScriptingOptions -deviceId 101 } | Pester\Should -Throw
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets all document templates' {
 		$result = Get-NinjaOneDocumentTemplates
 
-		$result.resource | Should -Be 'v2/document-templates'
+		$result.resource | Pester\Should -Be 'v2/document-templates'
 	}
 
 	It 'delegates missing document templates' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneDocumentTemplates } | Should -Throw '*No document templates found.*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDocumentTemplates } | Pester\Should -Throw '*No document templates found.*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets a document template by id without recursion' {
 		$result = Get-NinjaOneDocumentTemplates -documentTemplateId 102
 
-		$result.resource | Should -Be 'v2/document-templates/102'
-		Assert-MockCalled -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1
+		$result.resource | Pester\Should -Be 'v2/document-templates/102'
+		Pester\Should-Invoke -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates missing document template results' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneDocumentTemplates -documentTemplateId 102 } | Should -Throw '*Document template with id 102 not found.*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneDocumentTemplates -documentTemplateId 102 } | Pester\Should -Throw '*Document template with id 102 not found.*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'End user and removal operations' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body, $QSCollection)
 			[pscustomobject]@{ resource = $Resource; body = $Body; query = $QSCollection }
 		}
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4821,9 +4830,9 @@ Describe 'End user and removal operations' {
 	It 'creates an end user and passes invitation options in the query' {
 		$result = New-NinjaOneEndUser -endUser @{ firstName = 'Jane'; email = 'jane@example.com' } -sendInvitation -Confirm:$false
 
-		$result.resource | Should -Be 'v2/user/end-users'
-		$result.body.firstName | Should -Be 'Jane'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/user/end-users'
+		$result.body.firstName | Pester\Should -Be 'Jane'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('endUser') -and $Parameters.ContainsKey('sendInvitation')
 		}
 	}
@@ -4831,26 +4840,26 @@ Describe 'End user and removal operations' {
 	It 'does not create an end user when WhatIf is used' {
 		New-NinjaOneEndUser -endUser @{ firstName = 'Jane' } -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'updates end user device access' {
 		$result = Set-NinjaOneEndUserDeviceAccess -id 111 -addDeviceIds 1, 2 -removeDeviceIds 3 -Confirm:$false
 
-		$result.resource | Should -Be 'v2/user/end-user/111/device-access'
-		$result.body.addDeviceIds | Should -HaveCount 2
-		$result.body.removeDeviceIds[0] | Should -Be 3
+		$result.resource | Pester\Should -Be 'v2/user/end-user/111/device-access'
+		$result.body.addDeviceIds | Pester\Should -HaveCount 2
+		$result.body.removeDeviceIds[0] | Pester\Should -Be 3
 	}
 
 	It 'requires an end user device access change' {
-		{ Set-NinjaOneEndUserDeviceAccess -id 111 -Confirm:$false } | Should -Throw '*Specify at least one*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Set-NinjaOneEndUserDeviceAccess -id 111 -Confirm:$false } | Pester\Should -Throw '*Specify at least one*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'removes a tab by id' {
 		Remove-NinjaOneTab -tabId 112 -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/tab/112'
 		}
 	}
@@ -4858,7 +4867,7 @@ Describe 'End user and removal operations' {
 	It 'removes the webhook configuration default route' {
 		Remove-NinjaOneWebhook -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/webhook'
 		}
 	}
@@ -4866,7 +4875,7 @@ Describe 'End user and removal operations' {
 	It 'removes a specific webhook route' {
 		Remove-NinjaOneWebhook -webhookId 'hook-113' -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/webhook/hook-113'
 		}
 	}
@@ -4874,14 +4883,14 @@ Describe 'End user and removal operations' {
 
 Describe 'Attachment, backup, and document operations' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{ resource = $Resource; query = $QSCollection }
 		}
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body, $UseMultipart)
 			[pscustomobject]@{
 				resource = $Resource
@@ -4891,7 +4900,7 @@ Describe 'Attachment, backup, and document operations' {
 			}
 		}
 
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -4901,38 +4910,37 @@ Describe 'Attachment, backup, and document operations' {
 	It 'creates and returns an attachment relation' {
 		$result = New-NinjaOneAttachmentRelation -entityType 'ORGANIZATION' -entityId 121 -attachmentRelation @{ name = 'contract.pdf' } -show -Confirm:$false
 
-		$result.resource | Should -Be 'v2/related-items/entity/ORGANIZATION/121/attachment'
-		$result.useMultipart | Should -BeTrue
+		$result.resource | Pester\Should -Be 'v2/related-items/entity/ORGANIZATION/121/attachment'
+		$result.useMultipart | Pester\Should -BeTrue
 	}
 
 	It 'delegates attachment relation API errors' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'attachment-api-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'attachment-api-failed' }
 
-		{ New-NinjaOneAttachmentRelation -entityType 'ORGANIZATION' -entityId 121 -attachmentRelation @{} -Confirm:$false } |
-			Should -Throw '*attachment-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ New-NinjaOneAttachmentRelation -entityType 'ORGANIZATION' -entityId 121 -attachmentRelation @{} -Confirm:$false } | Pester\Should -Throw '*attachment-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'does not create an attachment relation with WhatIf' {
 		New-NinjaOneAttachmentRelation -entityType 'ORGANIZATION' -entityId 121 -attachmentRelation @{} -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'creates an integrity check job from individual parameters' {
 		$planUid = [guid]'00000000-0000-0000-0000-000000000122'
 		$result = New-NinjaOneIntegrityCheckJob -deviceId 122 -planUid $planUid -show -Confirm:$false
 
-		$result.resource | Should -Be 'v2/backup/integrity-check-jobs'
-		$result.body.deviceId | Should -Be 122
-		$result.body.planUid | Should -Be $planUid
+		$result.resource | Pester\Should -Be 'v2/backup/integrity-check-jobs'
+		$result.body.deviceId | Pester\Should -Be 122
+		$result.body.planUid | Pester\Should -Be $planUid
 	}
 
 	It 'creates an integrity check job from a body' {
 		$body = @{ deviceId = 123; planUid = [guid]'00000000-0000-0000-0000-000000000123' }
 		$result = New-NinjaOneIntegrityCheckJob -integrityCheckJob $body -show -Confirm:$false
 
-		$result.body.deviceId | Should -Be 123
+		$result.body.deviceId | Pester\Should -Be 123
 	}
 
 	It 'does not create an integrity check job with WhatIf' {
@@ -4940,44 +4948,44 @@ Describe 'Attachment, backup, and document operations' {
 
 		New-NinjaOneIntegrityCheckJob -integrityCheckJob $body -WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates integrity check job API errors' {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'integrity-job-api-failed' }
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith { throw 'integrity-job-api-failed' }
 		$body = @{ deviceId = 123; planUid = [guid]'00000000-0000-0000-0000-000000000123' }
 
-		{ New-NinjaOneIntegrityCheckJob -integrityCheckJob $body -Confirm:$false } | Should -Throw '*integrity-job-api-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ New-NinjaOneIntegrityCheckJob -integrityCheckJob $body -Confirm:$false } | Pester\Should -Throw '*integrity-job-api-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'gets organisation document signed URLs' {
 		$result = Get-NinjaOneOrganisationDocumentSignedURLs -clientDocumentId 124
 
-		$result.resource | Should -Be 'v2/organization/document/124/signed-urls'
-		Assert-MockCalled -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		$result.resource | Pester\Should -Be 'v2/organization/document/124/signed-urls'
+		Pester\Should-Invoke -CommandName New-NinjaOneQuery -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			-not $Parameters.ContainsKey('clientDocumentId')
 		}
 	}
 
 	It 'delegates empty organisation document signed URL results' {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ Get-NinjaOneOrganisationDocumentSignedURLs -clientDocumentId 124 } | Should -Throw '*No organisation document signed URLs found*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ Get-NinjaOneOrganisationDocumentSignedURLs -clientDocumentId 124 } | Pester\Should -Throw '*No organisation document signed URLs found*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'User and tab query families' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource)
 			[pscustomobject]@{ id = 201; resource = $Resource }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -5001,21 +5009,21 @@ Describe 'User and tab query families' {
 	It 'gets <Name>' -ForEach $SimpleUserCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
+		$result.resource | Pester\Should -Be $PSItem.Resource
 	}
 
 	It 'delegates empty <Name> results' -ForEach $SimpleUserCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ & $PSItem.Invoke } | Should -Throw ('*{0}*' -f $PSItem.NoResultError)
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw ('*{0}*' -f $PSItem.NoResultError)
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates <Name> API failures' -ForEach $SimpleUserCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'user-query-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'user-query-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*user-query-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*user-query-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	$TabCases = @(
@@ -5042,46 +5050,46 @@ Describe 'User and tab query families' {
 	It 'gets <Name>' -ForEach $TabCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
+		$result.resource | Pester\Should -Be $PSItem.Resource
 	}
 
 	It 'delegates empty <Name> results' -ForEach $TabCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-		{ & $PSItem.Invoke } | Should -Throw ('*{0}*' -f $PSItem.NoResultError)
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw ('*{0}*' -f $PSItem.NoResultError)
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 	It 'delegates <Name> API failures' -ForEach $TabCases {
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'tab-query-failed' }
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'tab-query-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*tab-query-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*tab-query-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Organisation checklist families' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 			[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 		}
-		Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $QSCollection)
 			[pscustomobject]@{ resource = $Resource; query = $QSCollection }
 		}
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith {
 			param($Resource)
 			204
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -5090,31 +5098,31 @@ Describe 'Organisation checklist families' {
 	It 'gets all organisation checklists' {
 		$result = Get-NinjaOneOrganisationChecklists
 
-		$result.resource | Should -Be 'v2/organization/checklists'
+		$result.resource | Pester\Should -Be 'v2/organization/checklists'
 	}
 
 	It 'gets an organisation checklist by id' {
 		$result = Get-NinjaOneOrganisationChecklist -checklistId 201
 
-		$result.resource | Should -Be 'v2/organization/checklist/201'
+		$result.resource | Pester\Should -Be 'v2/organization/checklist/201'
 	}
 
 	It 'gets organisation checklist signed URLs' {
 		$result = Get-NinjaOneOrganisationChecklistSignedURLs -checklistId 202
 
-		$result.resource | Should -Be 'v2/organization/checklist/202/signed-urls'
+		$result.resource | Pester\Should -Be 'v2/organization/checklist/202/signed-urls'
 	}
 
 	It 'promotes organisation checklists with a new name' {
 		$result = Invoke-NinjaOneOrganisationChecklistsPromoteWithName -request @{ checklistIds = @(1, 2); name = 'Renamed' } -Confirm:$false
 
-		$result.resource | Should -Be 'v2/organization/checklists/promote-with-name'
+		$result.resource | Pester\Should -Be 'v2/organization/checklists/promote-with-name'
 	}
 
 	It 'removes an organisation checklist' {
 		Remove-NinjaOneOrganisationChecklist -checklistId 203 -Confirm:$false
 
-		Assert-MockCalled -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq 'v2/organization/checklist/203'
 		}
 	}
@@ -5122,29 +5130,29 @@ Describe 'Organisation checklist families' {
 	It 'creates organisation checklists from templates' {
 		$result = New-NinjaOneOrganisationChecklistsFromTemplates -organisationId 204 -request @{ templateIds = @(10, 11) } -Confirm:$false
 
-		$result.resource | Should -Be 'v2/organization/204/checklists-from-templates'
+		$result.resource | Pester\Should -Be 'v2/organization/204/checklists-from-templates'
 	}
 
 	It 'updates organisation checklists' {
 		$result = Set-NinjaOneOrganisationChecklists -checklists @(@{ checklistId = 205; name = 'Updated' }) -Confirm:$false
 
-		$result.resource | Should -Be 'v2/organization/checklists'
+		$result.resource | Pester\Should -Be 'v2/organization/checklists'
 	}
 
 	It 'promotes organisation checklists' {
 		$result = Invoke-NinjaOneOrganisationChecklistsPromote -request @{ checklistIds = @(206, 207) } -Confirm:$false
 
-		$result.resource | Should -Be 'v2/organization/checklists/promote'
+		$result.resource | Pester\Should -Be 'v2/organization/checklists/promote'
 	}
 }
 
 Describe 'User removal families' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith {
 			param($Resource)
 			[pscustomobject]@{ method = 'delete'; resource = $Resource }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -5168,7 +5176,7 @@ Describe 'User removal families' {
 	It 'executes <Name>' -ForEach $RemovalCases {
 		& $PSItem.Invoke
 
-		Assert-MockCalled -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 1 -ParameterFilter {
 			$Resource -eq $PSItem.Resource
 		}
 	}
@@ -5176,24 +5184,24 @@ Describe 'User removal families' {
 	It 'does not execute <Name> with WhatIf' -ForEach $RemovalCases {
 		& $PSItem.WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates <Name> failures' -ForEach $RemovalCases {
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { throw 'user-delete-failed' }
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { throw 'user-delete-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*user-delete-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*user-delete-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'User set families' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'patch'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -5217,35 +5225,35 @@ Describe 'User set families' {
 	It 'executes <Name>' -ForEach $UserSetCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
+		$result.resource | Pester\Should -Be $PSItem.Resource
 	}
 
 	It 'does not execute <Name> with WhatIf' -ForEach $UserSetCases {
 		& $PSItem.WhatIf
 
-		Assert-MockCalled -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates <Name> failures' -ForEach $UserSetCases {
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'user-set-failed' }
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith { throw 'user-set-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*user-set-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*user-set-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Tag mutation families' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'post'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'put'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -5253,14 +5261,14 @@ Describe 'Tag mutation families' {
 
 	Describe 'Ticketing query families' {
 		BeforeEach {
-			Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+			Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 				[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 			}
-			Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+			Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 				param($Resource, $QSCollection)
 				[pscustomobject]@{ resource = $Resource; query = $QSCollection }
 			}
-			Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+			Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 				param($ErrorRecord)
 				throw $ErrorRecord.Exception
 			}
@@ -5268,14 +5276,14 @@ Describe 'Tag mutation families' {
 
 		Describe 'Device query families' {
 			BeforeEach {
-				Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
+				Pester\Mock -CommandName New-NinjaOneQuery -ModuleName $ModuleName -MockWith {
 					[System.Web.HttpUtility]::ParseQueryString([String]::Empty)
 				}
-				Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
+				Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith {
 					param($Resource, $QSCollection)
 					[pscustomobject]@{ resource = $Resource; query = $QSCollection }
 				}
-				Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+				Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 					param($ErrorRecord)
 					throw $ErrorRecord.Exception
 				}
@@ -5305,19 +5313,19 @@ Describe 'Tag mutation families' {
 			It 'gets <Name>' -ForEach $DeviceCases {
 				$result = & $PSItem.Invoke
 
-				$result.resource | Should -Be $PSItem.Resource
+				$result.resource | Pester\Should -Be $PSItem.Resource
 			}
 
 			It 'returns a value for empty <Name> results' -ForEach $DeviceCases {
-				Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+				Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-				{ & $PSItem.Invoke } | Should -Not -Throw
+				{ & $PSItem.Invoke } | Pester\Should -Not -Throw
 			}
 
 			It 'delegates <Name> API failures' -ForEach $DeviceCases {
-				Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-query-failed' }
+				Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'device-query-failed' }
 
-				{ & $PSItem.Invoke } | Should -Throw '*device-query-failed*'
+				{ & $PSItem.Invoke } | Pester\Should -Throw '*device-query-failed*'
 			}
 		}
 
@@ -5363,19 +5371,19 @@ Describe 'Tag mutation families' {
 		It 'gets <Name>' -ForEach $TicketingCases {
 			$result = & $PSItem.Invoke
 
-			$result.resource | Should -Be $PSItem.Resource
+			$result.resource | Pester\Should -Be $PSItem.Resource
 		}
 
 		It 'delegates empty <Name> results' -ForEach $TicketingCases {
-			Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
+			Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { $null }
 
-			{ & $PSItem.Invoke } | Should -Throw ('*{0}*' -f $PSItem.NoResultError)
+			{ & $PSItem.Invoke } | Pester\Should -Throw ('*{0}*' -f $PSItem.NoResultError)
 		}
 
 		It 'delegates <Name> API failures' -ForEach $TicketingCases {
-			Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'ticketing-query-failed' }
+			Pester\Mock -CommandName New-NinjaOneGETRequest -ModuleName $ModuleName -MockWith { throw 'ticketing-query-failed' }
 
-			{ & $PSItem.Invoke } | Should -Throw '*ticketing-query-failed*'
+			{ & $PSItem.Invoke } | Pester\Should -Throw '*ticketing-query-failed*'
 		}
 	}
 
@@ -5419,42 +5427,42 @@ Describe 'Tag mutation families' {
 	It 'executes <Name>' -ForEach $MutationCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
+		$result.resource | Pester\Should -Be $PSItem.Resource
 	}
 
 	It 'does not execute <Name> with WhatIf' -ForEach $MutationCases {
 		& $PSItem.WhatIf
 
-		Assert-MockCalled -CommandName $PSItem.Command -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName $PSItem.Command -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates <Name> failures' -ForEach $MutationCases {
-		Mock -CommandName $PSItem.Command -ModuleName $ModuleName -MockWith { throw 'action-failed' }
+		Pester\Mock -CommandName $PSItem.Command -ModuleName $ModuleName -MockWith { throw 'action-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*action-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*action-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
 Describe 'Billing mutation families' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'post'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'put'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePATCHRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'patch'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith {
 			param($Resource)
 			[pscustomobject]@{ method = 'delete'; resource = $Resource }
 		}
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -5547,37 +5555,37 @@ Describe 'Billing mutation families' {
 	It 'executes <Name>' -ForEach $BillingCases {
 		$result = & $PSItem.Invoke
 
-		$result.resource | Should -Be $PSItem.Resource
+		$result.resource | Pester\Should -Be $PSItem.Resource
 		if ($PSItem.Command -eq 'New-NinjaOnePATCHRequest') {
-			$result.body.Count | Should -Be $PSItem.BodyCount
+			$result.body.Count | Pester\Should -Be $PSItem.BodyCount
 		}
 	}
 
 	It 'does not execute <Name> with WhatIf' -ForEach $BillingCases {
 		& $PSItem.WhatIf
 
-		Assert-MockCalled -CommandName $PSItem.Command -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName $PSItem.Command -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates <Name> failures' -ForEach $BillingCases {
-		Mock -CommandName $PSItem.Command -ModuleName $ModuleName -MockWith { throw 'billing-mutation-failed' }
+		Pester\Mock -CommandName $PSItem.Command -ModuleName $ModuleName -MockWith { throw 'billing-mutation-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*billing-mutation-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*billing-mutation-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 
 Describe 'Organisation and device actions' {
 	BeforeEach {
-		Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePOSTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'post'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOnePUTRequest -ModuleName $ModuleName -MockWith {
 			param($Resource, $Body)
 			[pscustomobject]@{ method = 'put'; resource = $Resource; body = $Body }
 		}
-		Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
-		Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
+		Pester\Mock -CommandName New-NinjaOneDELETERequest -ModuleName $ModuleName -MockWith { 204 }
+		Pester\Mock -CommandName New-NinjaOneError -ModuleName $ModuleName -MockWith {
 			param($ErrorRecord)
 			throw $ErrorRecord.Exception
 		}
@@ -5667,24 +5675,24 @@ Describe 'Organisation and device actions' {
 		$result = & $PSItem.Invoke
 
 		if ($null -ne $PSItem.Resource) {
-			$result.resource | Should -Be $PSItem.Resource
+			$result.resource | Pester\Should -Be $PSItem.Resource
 		}
 		else {
-			$result | Should -Not -BeNullOrEmpty
+			$result | Pester\Should -Not -BeNullOrEmpty
 		}
 	}
 
 	It 'does not execute <Name> with WhatIf' -ForEach $ActionCases {
 		& $PSItem.WhatIf
 
-		Assert-MockCalled -CommandName $PSItem.Command -ModuleName $ModuleName -Times 0
+		Pester\Should-Invoke -CommandName $PSItem.Command -ModuleName $ModuleName -Times 0
 	}
 
 	It 'delegates <Name> failures' -ForEach $ActionCases {
-		Mock -CommandName $PSItem.Command -ModuleName $ModuleName -MockWith { throw 'action-failed' }
+		Pester\Mock -CommandName $PSItem.Command -ModuleName $ModuleName -MockWith { throw 'action-failed' }
 
-		{ & $PSItem.Invoke } | Should -Throw '*action-failed*'
-		Assert-MockCalled -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
+		{ & $PSItem.Invoke } | Pester\Should -Throw '*action-failed*'
+		Pester\Should-Invoke -CommandName New-NinjaOneError -ModuleName $ModuleName -Times 1
 	}
 }
 
