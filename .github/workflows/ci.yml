@@ -282,7 +282,7 @@ jobs:
         if: always()
         uses: codecov/codecov-action@v6
         with:
-          files: .artifacts/CodeCoverage.core.xml,.artifacts/CodeCoverage.private.xml,.artifacts/CodeCoverage.public.xml,.artifacts/CodeCoverage.docs.xml
+          files: .artifacts/CodeCoverage.core.xml
           disable_search: true
           flags: core
           fail_ci_if_error: true
